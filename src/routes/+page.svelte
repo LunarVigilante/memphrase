@@ -571,7 +571,7 @@
 	<section
 		class="relative flex h-16 w-full items-center gap-3 rounded-lg bg-slate-700 p-4 shadow-lg transition-colors duration-200 {noCategoriesSelectedError ? 'border-red-500' : 'border-green-500'}"
 	>
-		<span class="flex-grow truncate font-mono text-2xl {noCategoriesSelectedError ? 'text-red-400' : 'text-gray-50'}"
+		<span class="flex-grow truncate font-mono text-xl {noCategoriesSelectedError ? 'text-red-400' : 'text-gray-50'}"
 				role="status" 
 				aria-live="polite"
 				on:mouseenter={handleMouseEnterPassphrase}
