@@ -1,0 +1,13 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+/* Ensure body has a dark background by default when html.dark is set */
+html.dark body {
+  @apply bg-gray-900 text-gray-100; /* Or your preferred dark theme base */
+}
+
+/* Optional: if you want a default light theme for body if html.dark is NOT set (though we intend permanent dark) */
+/* body {
+  @apply bg-white text-gray-900;
+} */

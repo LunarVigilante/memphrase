@@ -1,0 +1,23 @@
+export const qualitiesTraits = [
+  'Brave',
+  'Calm',
+  'Clever',
+  'Eager',
+  'Fair',
+  'Gentle',
+  'Glad',
+  'Happy',
+  'Honest',
+  'Humble',
+  'Jolly',
+  'Kind',
+  'Lively',
+  'Loyal',
+  'Modest',
+  'Nice',
+  'Polite',
+  'Proud',
+  'Silly',
+  'Witty',
+  'Zealous'
+]; 

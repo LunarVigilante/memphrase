@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="%paraglide.lang%" class="dark">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="%sveltekit.assets%/memphrase-logo.png" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		%sveltekit.head%
+		<style>
+			body {
+				animation: gradientShift 30s ease infinite;
+				background: linear-gradient(-45deg, #111827, #1f2937, #374151, #4b5563);
+				background-size: 400% 400%;
+				color: #e5e7eb; /* Default text color for body */
+			}
+
+			@keyframes gradientShift {
+				0% { background-position: 0% 50%; }
+				50% { background-position: 100% 50%; }
+				100% { background-position: 0% 50%; }
+			}
+
+			.strength-bar-fill {
+				position: relative;
+				overflow: hidden; /* To contain the gleam */
+			}
+
+			.strength-bar-fill::after {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: -150%; /* Start off-screen to the left */
+				width: 60%; /* Made wider */
+				height: 100%;
+				background: linear-gradient(
+					to right,
+					rgba(255, 255, 255, 0) 0%,
+					rgba(255, 255, 255, 0.4) 50%, /* Slightly more opaque center */
+					rgba(255, 255, 255, 0) 100%
+				);
+				transform: skewX(-25deg); /* Angle the gleam */
+				animation: gleam 2.5s infinite linear;
+				opacity: 0.9; /* Increased opacity */
+			}
+
+			/* Reusable Button Gleam */
+			.button-gleam {
+				position: relative; /* Important for pseudo-element positioning */
+				overflow: hidden; /* To contain the gleam */
+			}
+
+			.button-gleam::after {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: -150%;
+				width: 50%; /* Gleam width for buttons */
+				height: 100%;
+				background: linear-gradient(
+					to right,
+					rgba(255, 255, 255, 0) 0%,
+					rgba(255, 255, 255, 0.35) 50%, /* Button gleam opacity */
+					rgba(255, 255, 255, 0) 100%
+				);
+				transform: skewX(-25deg);
+				animation: gleam 4.5s infinite linear; /* Slowed down from 3s */
+				opacity: 0.85;
+			}
+
+			/* Gleam for selected radio button labels */
+			.radio-label-gleam {
+				position: relative; 
+				overflow: hidden;
+				display: inline-flex; /* To match label's behavior */
+				align-items: center;
+			}
+
+			.radio-label-gleam::after {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: -150%;
+				width: 50%; 
+				height: 100%;
+				background: linear-gradient(
+					to right,
+					rgba(255, 255, 255, 0) 0%,
+					rgba(255, 255, 255, 0.25) 50%, /* Subtler gleam for selected radio */
+					rgba(255, 255, 255, 0) 100%
+				);
+				transform: skewX(-25deg);
+				animation: gleam 3.5s infinite linear; /* Unique speed */
+				opacity: 0.9;
+			}
+
+			@keyframes gleam {
+				0% {
+					left: -150%;
+				}
+				100% {
+					left: 150%; /* Move across to the right */
+				}
+			}
+		</style>
+	</head>
+	<body data-sveltekit-preload-data="hover" class="bg-slate-900">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
