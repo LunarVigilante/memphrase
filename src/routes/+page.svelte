@@ -984,7 +984,7 @@
 		{/if}
 
 		<!-- Reset to Defaults Button -->
-		<div class="mt-6 pt-6 border-t border-slate-700 text-center">
+		<div class="mt-6 pt-6 text-center">
 			<button 
 				on:click={resetToDefaults}
 				class="px-4 py-2 text-xs font-medium text-gray-400 hover:text-gray-100 border border-slate-600 rounded-md hover:border-slate-500 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800"
