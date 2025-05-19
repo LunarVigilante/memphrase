@@ -104,7 +104,7 @@
 	$: noCategoriesSelectedError = selectedCategories.length === 0;
 
 	// Reactive trigger for settings changes
-	$: settingsSignature = `${generationMode}-${numWords}-${separator}-${capitalize}-${numDigitsForWordMode}-${numSymbolsForWordMode}-${selectedCategories.join(',')}-${numSymPosition}-${autoCopy}-${charGrouping}-${randomPasswordLength}-${randomIncludeLowercase}-${randomIncludeUppercase}-${randomIncludeNumbers}-${randomIncludeSymbols}-${randomCharsOptionsOpen}-${customSymbolsWordMode.join('')}-${customSymbolsRandomMode.join('')}`;
+	$: settingsSignature = `${generationMode}-${numWords}-${separator}-${capitalize}-${numDigitsForWordMode}-${numSymbolsForWordMode}-${selectedCategories.join(',')}-${numSymPosition}-${autoCopy}-${charGrouping}-${randomPasswordLength}-${randomIncludeLowercase}-${randomIncludeUppercase}-${randomIncludeNumbers}-${randomIncludeSymbols}-${customSymbolsWordMode.join('')}-${customSymbolsRandomMode.join('')}`;
 
 	let initialSignature = '';
 	let initialSignatureCaptured = false;
@@ -581,7 +581,7 @@
 		> 
 		<button
 			on:click={copyPassword}
-			class="button-gleam min-w-[55px] rounded-md px-2 py-1.5 text-xs font-medium text-white transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 disabled:opacity-60 dark:focus:ring-offset-slate-700 {copyButtonText === 'Copied!' ? 'bg-emerald-700' : 'bg-green-500 hover:bg-green-600'}"
+			class="button-gleam min-w-[70px] rounded-md px-3 py-1.5 text-sm font-medium text-white transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 disabled:opacity-60 dark:focus:ring-offset-slate-700 {copyButtonText === 'Copied!' ? 'bg-emerald-700' : 'bg-green-500 hover:bg-green-600'}"
 			aria-label="Copy passphrase"
 			disabled={copyButtonText === 'Copied!' || noCategoriesSelectedError}
 		>
@@ -591,7 +591,7 @@
 		{#if canShowPrevious}
 			<button
 				on:click={showPreviousPassphrase}
-				class="min-w-[55px] rounded-md border px-2 py-1.5 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 active:bg-slate-500 dark:focus:ring-offset-slate-800 {canShowPrevious ? 'bg-slate-600 border-slate-500 text-gray-200 hover:bg-slate-500 hover:text-gray-100 active:text-gray-100' : 'opacity-50 cursor-not-allowed border-slate-700 text-gray-500'}"
+				class="min-w-[60px] rounded-md border px-2 py-1.5 text-xs font-medium transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 active:bg-slate-500 dark:focus:ring-offset-slate-800 {canShowPrevious ? 'bg-slate-600 border-slate-500 text-gray-200 hover:bg-slate-500 hover:text-gray-100 active:text-gray-100' : 'opacity-50 cursor-not-allowed border-slate-700 text-gray-500'}"
 				aria-label="Show previous passphrase"
 				disabled={!canShowPrevious} 
 			>
