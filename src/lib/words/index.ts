@@ -57,11 +57,13 @@ export const categories: WordCategory[] = [
 
 // Default selected leaf categories
 export const defaultCategories = [
-    'General Adjectives', 
+    'General Adjectives',
     'Colors',
+    'Qualities/Traits',
     'Animals',
-    'Common Objects', 
-    'Action Verbs'
+    'Common Objects',
+    'Foods',
+    'Places'
 ];
 
 // Helper function to get all leaf category names (useful for validation or other logic if needed)

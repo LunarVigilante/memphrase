@@ -31,6 +31,21 @@ export interface PassphraseOptions {
 	customSymbols?: string[]; // New: For user-selected symbols
 }
 
+// Helper to get all words from a specific parent category type (e.g., 'Nouns')
+// from the user's selected leaf categories.
+function getWordsFromSelectedByType(parentCategoryName: 'Adjectives' | 'Nouns' | 'Verbs', selectedLeafCategories: string[]): string[] {
+	const words: string[] = [];
+	const parentCat = allNestedCategories.find(c => c.name === parentCategoryName);
+	if (parentCat && parentCat.subCategories) {
+		for (const subCat of parentCat.subCategories) {
+			if (selectedLeafCategories.includes(subCat.name) && subCat.words) {
+				words.push(...subCat.words);
+			}
+		}
+	}
+	return words;
+}
+
 export function generatePassphraseService(options: PassphraseOptions): string {
 	const { 
 		generationMode = 'words', // Default to words if not provided
@@ -81,40 +96,109 @@ export function generatePassphraseService(options: PassphraseOptions): string {
 	} = options;
 	
 	const wordsArr: string[] = [];
-	const activeCategoriesObjects: WordCategory[] = [];
-	for (const name of selectedCategories) {
-		const category = getCategoryByName(name, allNestedCategories);
-		if (category && category.words) { activeCategoriesObjects.push(category); }
-	}
 
-	if (numWords > 0 && activeCategoriesObjects.length === 0) {
-		return 'Error: No word categories selected or found for generation.';
+	if (numWords > 0 && selectedCategories.length === 0) {
+		return 'Error: No word categories selected for generation.'; // Updated error message
 	}
 
 	if (numWords > 0) {
-        const shuffledActiveCategoriesForWordPicking = [...activeCategoriesObjects].sort(() => Math.random() - 0.5);
-        const numToGuaranteeForWordPicking = Math.min(numWords, shuffledActiveCategoriesForWordPicking.length);
-        for (let i = 0; i < numToGuaranteeForWordPicking; i++) {
-            const cat = shuffledActiveCategoriesForWordPicking[i];
-            let word = getRandomElement(cat.words!);
-            if (capitalize) word = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(); else word = word.toLowerCase();
-            wordsArr.push(word);
-        }
-        if (numWords > numToGuaranteeForWordPicking) {
-            for (let i = numToGuaranteeForWordPicking; i < numWords; i++) {
-                const catIdx = (i - numToGuaranteeForWordPicking) % activeCategoriesObjects.length;
-                const cat = activeCategoriesObjects[catIdx];
-                let word = getRandomElement(cat.words!);
-                if (capitalize) word = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(); else word = word.toLowerCase();
-                wordsArr.push(word);
-            }
-        }
-        // Shuffle the entire wordsArr to ensure randomness of word order
-        for (let i = wordsArr.length - 1; i > 0; i--) { 
-            const j = Math.floor(Math.random() * (i + 1));
-            [wordsArr[i], wordsArr[j]] = [wordsArr[j], wordsArr[i]];
-        }
-    }
+		if (numWords === 3) {
+			const adjectives = getWordsFromSelectedByType('Adjectives', selectedCategories);
+			const nouns = getWordsFromSelectedByType('Nouns', selectedCategories);
+
+			// We need at least one adjective word and one noun word to proceed.
+			// For two adjectives, we prefer two different ones if available.
+			if (adjectives.length > 0 && nouns.length > 0) {
+				let adj1 = getRandomElement(adjectives);
+				let adj2: string;
+
+				if (adjectives.length > 1) {
+					let attempts = 0;
+					do {
+						adj2 = getRandomElement(adjectives);
+						attempts++;
+					} while (adj2 === adj1 && attempts < 10); // Try to get a different adjective
+				} else {
+					adj2 = adj1; // If only one adjective word type available, use it twice
+				}
+				
+				let noun = getRandomElement(nouns);
+
+				if (capitalize) {
+					adj1 = adj1.charAt(0).toUpperCase() + adj1.slice(1).toLowerCase();
+					adj2 = adj2.charAt(0).toUpperCase() + adj2.slice(1).toLowerCase();
+					noun = noun.charAt(0).toUpperCase() + noun.slice(1).toLowerCase();
+				} else {
+					adj1 = adj1.toLowerCase();
+					adj2 = adj2.toLowerCase();
+					noun = noun.toLowerCase();
+				}
+				wordsArr.push(adj1, adj2, noun); // Enforce Adjective Adjective Noun order
+			} else {
+				// Fallback to original random selection if not enough variety for A A N structure
+				// This part reuses the existing random selection logic for numWords
+				const activeCategoriesObjects: WordCategory[] = [];
+				for (const name of selectedCategories) {
+					const category = getCategoryByName(name, allNestedCategories);
+					if (category && category.words) { activeCategoriesObjects.push(category); }
+				}
+				if (activeCategoriesObjects.length === 0) return 'Error: Selected categories have no words.'; // Should be caught earlier
+
+				const shuffledActiveCategoriesForWordPicking = [...activeCategoriesObjects].sort(() => Math.random() - 0.5);
+				const numToGuaranteeForWordPicking = Math.min(numWords, shuffledActiveCategoriesForWordPicking.length);
+				for (let i = 0; i < numToGuaranteeForWordPicking; i++) {
+					const cat = shuffledActiveCategoriesForWordPicking[i];
+					let word = getRandomElement(cat.words!);
+					if (capitalize) word = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(); else word = word.toLowerCase();
+					wordsArr.push(word);
+				}
+				if (numWords > numToGuaranteeForWordPicking) {
+					for (let i = numToGuaranteeForWordPicking; i < numWords; i++) {
+						const catIdx = (i - numToGuaranteeForWordPicking) % activeCategoriesObjects.length;
+						const cat = activeCategoriesObjects[catIdx];
+						let word = getRandomElement(cat.words!);
+						if (capitalize) word = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(); else word = word.toLowerCase();
+						wordsArr.push(word);
+					}
+				}
+				// Shuffle the entire wordsArr for non-structured 3 words or other word counts
+				for (let i = wordsArr.length - 1; i > 0; i--) { 
+					const j = Math.floor(Math.random() * (i + 1));
+					[wordsArr[i], wordsArr[j]] = [wordsArr[j], wordsArr[i]];
+				}
+			}
+		} else { // Original logic for numWords !== 3
+			const activeCategoriesObjects: WordCategory[] = [];
+			for (const name of selectedCategories) {
+				const category = getCategoryByName(name, allNestedCategories);
+				if (category && category.words) { activeCategoriesObjects.push(category); }
+			}
+			if (activeCategoriesObjects.length === 0 && numWords > 0) return 'Error: Selected categories have no words.';
+
+			const shuffledActiveCategoriesForWordPicking = [...activeCategoriesObjects].sort(() => Math.random() - 0.5);
+			const numToGuaranteeForWordPicking = Math.min(numWords, shuffledActiveCategoriesForWordPicking.length);
+			for (let i = 0; i < numToGuaranteeForWordPicking; i++) {
+				const cat = shuffledActiveCategoriesForWordPicking[i];
+				let word = getRandomElement(cat.words!);
+				if (capitalize) word = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(); else word = word.toLowerCase();
+				wordsArr.push(word);
+			}
+			if (numWords > numToGuaranteeForWordPicking) {
+				for (let i = numToGuaranteeForWordPicking; i < numWords; i++) {
+					const catIdx = (i - numToGuaranteeForWordPicking) % activeCategoriesObjects.length;
+					const cat = activeCategoriesObjects[catIdx];
+					let word = getRandomElement(cat.words!);
+					if (capitalize) word = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(); else word = word.toLowerCase();
+					wordsArr.push(word);
+				}
+			}
+			// Shuffle the entire wordsArr
+			for (let i = wordsArr.length - 1; i > 0; i--) { 
+				const j = Math.floor(Math.random() * (i + 1));
+				[wordsArr[i], wordsArr[j]] = [wordsArr[j], wordsArr[i]];
+			}
+		}
+	}
 
 	let numPart = '';
 	let symPart = '';
