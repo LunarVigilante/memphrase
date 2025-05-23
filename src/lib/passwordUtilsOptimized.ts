@@ -46,13 +46,13 @@ const calculateEntropyMemoized = memoize((totalSymbols: number, length: number) 
  * Efficiently get words from selected categories with lazy loading
  */
 export async function getWordsFromSelectedByTypeOptimized(
-	type: string, 
+	parentCategoryName: 'Adjectives' | 'Nouns' | 'Verbs', 
 	selectedCategories: string[]
 ): Promise<{
 	words: string[];
 	loadingProgress: { loaded: number; total: number; percentage: number };
 }> {
-	const cacheKey = `${type}_${selectedCategories.sort().join(',')}`;
+	const cacheKey = `${parentCategoryName}_${selectedCategories.sort().join(',')}`;
 	
 	// Check cache first
 	if (wordListResultCache.has(cacheKey)) {
@@ -63,26 +63,46 @@ export async function getWordsFromSelectedByTypeOptimized(
 	}
 	
 	const allWords: string[] = [];
-	const relevantCategories = selectedCategories.filter(cat => {
-		const category = getCategoryByName(cat);
-		return category && category.words;
-	});
 	
-	// Load word lists in parallel
-	const wordListPromises = relevantCategories.map(async categoryName => {
-		try {
-			return await loadWordList(categoryName);
-		} catch (error) {
-			console.warn(`Failed to load category ${categoryName}:`, error);
-			return [];
+	// Get categories that belong to the specified parent type
+	for (const selectedCat of selectedCategories) {
+		const category = getCategoryByName(selectedCat);
+		if (!category || !category.words) continue;
+		
+		// Check if this category belongs to the parent type we're looking for
+		let belongsToParent = false;
+		
+		if (parentCategoryName === 'Adjectives') {
+			belongsToParent = selectedCat.includes('Adjectives') || 
+							  selectedCat.includes('Colors') || 
+							  selectedCat.includes('Qualities') || 
+							  selectedCat.includes('Traits') || 
+							  selectedCat.includes('Sizes') || 
+							  selectedCat.includes('Shapes') ||
+							  selectedCat.includes('Emotions');
+		} else if (parentCategoryName === 'Nouns') {
+			belongsToParent = selectedCat.includes('Animals') || 
+							  selectedCat.includes('Objects') || 
+							  selectedCat.includes('Foods') || 
+							  selectedCat.includes('Places') || 
+							  selectedCat.includes('Concepts') || 
+							  selectedCat.includes('Ideas') ||
+							  selectedCat.includes('Technology') ||
+							  selectedCat.includes('Nature') ||
+							  selectedCat.includes('Occupations') ||
+							  selectedCat.includes('Transportation');
+		} else if (parentCategoryName === 'Verbs') {
+			belongsToParent = selectedCat.includes('Verbs');
 		}
-	});
-	
-	const wordLists = await Promise.all(wordListPromises);
-	
-	// Combine all words
-	for (const words of wordLists) {
-		allWords.push(...words);
+		
+		if (belongsToParent) {
+			try {
+				const words = await loadWordList(selectedCat);
+				allWords.push(...words);
+			} catch (error) {
+				console.warn(`Failed to load category ${selectedCat}:`, error);
+			}
+		}
 	}
 	
 	// Remove duplicates efficiently
@@ -154,6 +174,8 @@ export async function generateMemorableWordPatternOptimized(
 				selectedWords.push(getMemorableWord(nouns.words));
 			} else if (adjectives.words.length > 0) {
 				selectedWords.push(getMemorableWord(adjectives.words));
+			} else if (verbs.words.length > 0) {
+				selectedWords.push(getMemorableWord(verbs.words));
 			}
 			break;
 			
@@ -168,59 +190,102 @@ export async function generateMemorableWordPatternOptimized(
 				const allAvailable = [...adjectives.words, ...nouns.words, ...verbs.words];
 				if (allAvailable.length >= 2) {
 					const shuffled = allAvailable.sort(() => Math.random() - 0.5);
-					selectedWords.push(getMemorableWord(shuffled.slice(0, 2)));
+					selectedWords.push(shuffled[0], shuffled[1]);
 				}
 			}
 			break;
 			
 		case 3:
-			if (adjectives.words.length > 0 && nouns.words.length > 0 && verbs.words.length > 0) {
+			// Three words: Adjective + Adjective + Noun pattern (matching main logic)
+			if (adjectives.words.length >= 2 && nouns.words.length > 0) {
+				// Get two different adjectives
+				const firstAdj = getMemorableWord(adjectives.words);
+				let secondAdj = getMemorableWord(adjectives.words);
+				// Try to get a different adjective
+				let attempts = 0;
+				while (secondAdj === firstAdj && attempts < 5 && adjectives.words.length > 1) {
+					secondAdj = getMemorableWord(adjectives.words);
+					attempts++;
+				}
+				selectedWords.push(firstAdj, secondAdj, getMemorableWord(nouns.words));
+			} else if (adjectives.words.length > 0 && nouns.words.length > 0 && verbs.words.length > 0) {
+				// Fallback: Adjective + Noun + Verb pattern
 				selectedWords.push(
 					getMemorableWord(adjectives.words),
 					getMemorableWord(nouns.words),
 					getMemorableWord(verbs.words)
 				);
-			} else if (adjectives.words.length > 0 && nouns.words.length >= 2) {
-				selectedWords.push(
-					getMemorableWord(adjectives.words),
-					getMemorableWord(nouns.words),
-					getMemorableWord(nouns.words)
-				);
+			} else {
+				// Final fallback to any available words
+				const allAvailable = [...adjectives.words, ...nouns.words, ...verbs.words];
+				if (allAvailable.length >= 3) {
+					const shuffled = allAvailable.sort(() => Math.random() - 0.5);
+					selectedWords.push(shuffled[0], shuffled[1], shuffled[2]);
+				}
+			}
+			break;
+			
+		case 4:
+			// Four words: Adjective + Adjective + Noun + Verb pattern
+			if (adjectives.words.length >= 2 && nouns.words.length > 0 && verbs.words.length > 0) {
+				const firstAdj = getMemorableWord(adjectives.words);
+				let secondAdj = getMemorableWord(adjectives.words);
+				// Try to get a different adjective
+				let attempts = 0;
+				while (secondAdj === firstAdj && attempts < 5 && adjectives.words.length > 1) {
+					secondAdj = getMemorableWord(adjectives.words);
+					attempts++;
+				}
+				selectedWords.push(firstAdj, secondAdj, getMemorableWord(nouns.words), getMemorableWord(verbs.words));
+			} else {
+				// Fallback: diverse selection
+				const patterns = [];
+				if (adjectives.words.length > 0) patterns.push(() => getMemorableWord(adjectives.words));
+				if (nouns.words.length > 0) patterns.push(() => getMemorableWord(nouns.words));
+				if (verbs.words.length > 0) patterns.push(() => getMemorableWord(verbs.words));
+				
+				for (let i = 0; i < numWords && patterns.length > 0; i++) {
+					const patternIndex = i % patterns.length;
+					selectedWords.push(patterns[patternIndex]());
+				}
 			}
 			break;
 			
 		default:
-			// For 4+ words, create a more complex pattern
-			const targetCounts = {
-				adjectives: Math.max(1, Math.floor(numWords * 0.4)),
-				nouns: Math.max(1, Math.floor(numWords * 0.4)),
-				verbs: Math.max(1, numWords - Math.floor(numWords * 0.8))
-			};
-			
-			// Add words based on target counts
-			for (let i = 0; i < targetCounts.adjectives && adjectives.words.length > 0; i++) {
-				selectedWords.push(getMemorableWord(adjectives.words));
-			}
-			for (let i = 0; i < targetCounts.nouns && nouns.words.length > 0; i++) {
-				selectedWords.push(getMemorableWord(nouns.words));
-			}
-			for (let i = 0; i < targetCounts.verbs && verbs.words.length > 0; i++) {
-				selectedWords.push(getMemorableWord(verbs.words));
-			}
-			
-			// Fill remaining slots with any available words
-			const allAvailable = [...adjectives.words, ...nouns.words, ...verbs.words];
-			while (selectedWords.length < numWords && allAvailable.length > 0) {
-				selectedWords.push(getMemorableWord(allAvailable));
+			// For 5+ words, create a more complex but memorable pattern
+			if (adjectives.words.length > 0 && nouns.words.length > 0 && verbs.words.length > 0) {
+				const numAdj = Math.min(Math.ceil(numWords * 0.4), adjectives.words.length);
+				const numNoun = Math.min(Math.ceil(numWords * 0.4), nouns.words.length);
+				const numVerb = Math.min(numWords - numAdj - numNoun, verbs.words.length);
+				
+				// Add adjectives
+				for (let i = 0; i < numAdj; i++) {
+					selectedWords.push(getMemorableWord(adjectives.words));
+				}
+				// Add nouns
+				for (let i = 0; i < numNoun; i++) {
+					selectedWords.push(getMemorableWord(nouns.words));
+				}
+				// Add verbs
+				for (let i = 0; i < numVerb; i++) {
+					selectedWords.push(getMemorableWord(verbs.words));
+				}
+				
+				// Fill remaining slots
+				const allAvailable = [...adjectives.words, ...nouns.words, ...verbs.words];
+				while (selectedWords.length < numWords && allAvailable.length > 0) {
+					selectedWords.push(getMemorableWord(allAvailable));
+				}
+			} else {
+				// Fallback to original pattern generation
+				return { words: [], loadingProgress };
 			}
 			break;
 	}
 	
-	// Shuffle for better randomness while maintaining patterns
-	const shuffledWords = selectedWords.sort(() => Math.random() - 0.5);
-	
+	// Don't shuffle - maintain the intended pattern order
 	return {
-		words: shuffledWords.slice(0, numWords),
+		words: selectedWords.slice(0, numWords),
 		loadingProgress
 	};
 }

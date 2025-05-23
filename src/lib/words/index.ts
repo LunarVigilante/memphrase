@@ -72,12 +72,15 @@ export const defaultCategories = [
     'General Adjectives',
     'Colors',
     'Qualities/Traits',
+    'Sizes/Shapes',
+    'Emotions',
     'Animals',
     'Common Objects',
     'Foods',
     'Places',
-    'Nature',
-    'Technology'
+    'Concepts/Ideas',
+    'Technology',
+    'Nature'
 ];
 
 // Helper function to get all leaf category names (useful for validation or other logic if needed)

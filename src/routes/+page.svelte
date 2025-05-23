@@ -710,7 +710,7 @@
 	{/if}
 
 	{#if generationMode === 'words' && !noCategoriesSelectedError && numWords > 0}
-		<div class="text-center -mt-4 mb-0">
+		<div class="text-center mt-2 mb-0">
 			<CustomTooltip text="MemPhrase uses word patterns to make passphrases more memorable while maintaining security." position="top">
 				<p class="text-xs text-slate-400 italic">
 					Pattern: {describeWordPattern(numWords, selectedCategories)}
@@ -1088,6 +1088,7 @@
 			<a href="/contact" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Contact Us</a>
 			<a href="/password-guide" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Password Guide</a>
 			<a href="/secret-key-generator" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Key Generator</a>
+			<a href="/ssh-key-generator" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">SSH Keys</a>
 			<a href="/donate" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Support Us</a>
 		</div>
 
