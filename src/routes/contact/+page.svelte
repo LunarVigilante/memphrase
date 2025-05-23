@@ -1,18 +1,91 @@
 <script lang="ts">
+	// Removed: import { Recaptcha } from 'svelte-recaptcha-v2'; 
+	import { PUBLIC_RECAPTCHA_V2_SITE_KEY } from '$env/static/public';
+	import { browser } from '$app/environment'; 
+	import { onMount } from 'svelte';
+
 	let formStatusMessage = '';
 	let formStatusIsError = false;
 	let isLoading = false;
+	let recaptchaToken: string | null = null;
+	let recaptchaWidgetId: number | null = null; // To store the ID of the rendered widget for reset
+
+	// Declare grecaptcha so TypeScript knows about it from the global scope (loaded by app.html)
+	declare global {
+	    interface Window {
+	        grecaptcha: any; 
+	    }
+	}
+
+	function renderRecaptcha() {
+		if (browser && PUBLIC_RECAPTCHA_V2_SITE_KEY && window.grecaptcha && window.grecaptcha.render) {
+			const recaptchaContainer = document.getElementById('recaptcha-widget-container');
+			if (recaptchaContainer && recaptchaContainer.innerHTML.trim() === '') { // Render only if not already rendered
+				try {
+					recaptchaWidgetId = window.grecaptcha.render('recaptcha-widget-container', {
+						'sitekey': PUBLIC_RECAPTCHA_V2_SITE_KEY,
+						'theme': 'dark',
+						'callback': (token: string) => {
+							recaptchaToken = token;
+							formStatusMessage = ''; // Clear any 'Please complete reCAPTCHA' message
+							formStatusIsError = false;
+						},
+						'expired-callback': () => {
+							recaptchaToken = null;
+							// Optionally show a message that captcha expired
+						},
+						'error-callback': () => {
+							recaptchaToken = null;
+							formStatusMessage = 'reCAPTCHA failed to load. Please try refreshing.';
+							formStatusIsError = true;
+						}
+					});
+				} catch (e) {
+					console.error("Error rendering reCAPTCHA: ", e);
+					formStatusMessage = 'Could not load reCAPTCHA. Please check your connection or ad-blocker.';
+					formStatusIsError = true;
+				}
+			}
+		} else if (browser && !PUBLIC_RECAPTCHA_V2_SITE_KEY) {
+			console.error('CRITICAL: reCAPTCHA Site Key is undefined or empty for direct API!');
+			formStatusMessage = 'Error: reCAPTCHA configuration issue.';
+			formStatusIsError = true;
+		}
+	}
+
+	onMount(() => {
+		console.log('Site Key from env (for direct API):', PUBLIC_RECAPTCHA_V2_SITE_KEY);
+		if (browser) {
+			// Check if grecaptcha is already available (e.g. script loaded quickly)
+			if (window.grecaptcha && window.grecaptcha.render) {
+				renderRecaptcha();
+			} else {
+				// If not, wait for it. Google's script usually defines onload callback but this is a fallback.
+				const interval = setInterval(() => {
+					if (window.grecaptcha && window.grecaptcha.render) {
+						clearInterval(interval);
+						renderRecaptcha();
+					}
+				}, 100);
+			}
+		}
+	});
+
+	function resetRecaptcha() {
+		if (browser && window.grecaptcha && recaptchaWidgetId !== null) {
+			window.grecaptcha.reset(recaptchaWidgetId);
+		}
+		recaptchaToken = null;
+	}
 
 	async function handleSubmit(event: SubmitEvent) {
 		isLoading = true;
 		formStatusMessage = '';
 		formStatusIsError = false;
-		// event.preventDefault(); // Not strictly needed with SvelteKit form actions, but good practice for client-side handling
 
 		const form = event.target as HTMLFormElement;
 		const formData = new FormData(form);
 
-		// Client-side validation (mirroring some backend validation for better UX)
 		const email = formData.get('email') as string;
 		const subject = formData.get('subject') as string;
 
@@ -30,6 +103,14 @@
 			return;
 		}
 
+		if (!recaptchaToken) {
+			formStatusMessage = 'Please complete the reCAPTCHA.';
+			formStatusIsError = true;
+			isLoading = false;
+			return;
+		}
+		formData.append('g-recaptcha-response', recaptchaToken);
+
 		try {
 			const response = await fetch('/api/contact', {
 				method: 'POST',
@@ -41,15 +122,18 @@
 			if (response.ok) {
 				formStatusMessage = result.message || 'Message sent successfully!';
 				formStatusIsError = false;
-				form.reset(); // Clear the form on success
+				form.reset();
+				resetRecaptcha(); 
 			} else {
 				formStatusMessage = result.message || 'An error occurred.';
 				formStatusIsError = true;
+				resetRecaptcha();
 			}
 		} catch (error) {
 			console.error('Form submission error:', error);
 			formStatusMessage = 'A network error occurred. Please try again.';
 			formStatusIsError = true;
+			resetRecaptcha();
 		} finally {
 			isLoading = false;
 		}
@@ -89,6 +173,9 @@
 				<label for="message" class="block text-sm font-medium text-slate-300 mb-1">Message</label>
 				<textarea id="message" name="message" rows="4" required class="mt-1 block w-full rounded-md border-slate-600 bg-slate-700 text-slate-100 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm p-2.5" placeholder="Your message..."></textarea>
 			</div>
+
+			<!-- Placeholder for Google reCAPTCHA widget -->
+			<div id="recaptcha-widget-container" class="my-4 flex justify-center"></div> 
 
 			<div class="pt-2">
 				<button type="submit" 

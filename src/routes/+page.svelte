@@ -12,7 +12,7 @@
 	import { categories as wordListCategories, defaultCategories as defaultLeafCategories, getCategoryByName, type WordCategory } from '$lib/words'; // Import categories
 	import SymbolSelectorModal from '$lib/components/SymbolSelectorModal.svelte'; // Import the modal
 
-	interface PassPoetSettings {
+	interface MemPhraseSettings {
 		numWords: number;
 		separator: string;
 		capitalize: boolean;
@@ -37,7 +37,7 @@
 		customSymbolsRandomMode: string[];
 	}
 
-	const SETTINGS_KEY = 'passPoetSettings';
+	const SETTINGS_KEY = 'memPhraseSettings';
 	let appInitialized = false; // Flag to prevent premature saves/generations
 
 	// State for passphrase generation - with new defaults
@@ -243,7 +243,7 @@
 
 	// Save settings to localStorage when they change
 	$: if (appInitialized) {
-		const currentSettings: PassPoetSettings = {
+		const currentSettings: MemPhraseSettings = {
 			numWords,
 			separator,
 			capitalize,
@@ -273,7 +273,7 @@
 		const savedSettings = localStorage.getItem(SETTINGS_KEY);
 		if (savedSettings) {
 			try {
-				const parsedSettings: PassPoetSettings = JSON.parse(savedSettings);
+				const parsedSettings: MemPhraseSettings = JSON.parse(savedSettings);
 				numWords = parsedSettings.numWords || 4;
 				separator = parsedSettings.separator || '.';
 				capitalize = parsedSettings.capitalize === undefined ? true : parsedSettings.capitalize;
@@ -306,7 +306,7 @@
 									: DEFAULT_PASSPHRASE_SYMBOLS.split('');
 
 			} catch (e) {
-				console.error('Failed to parse PassPoet settings from localStorage', e);
+				console.error('Failed to parse MemPhrase settings from localStorage', e);
 			}
 		}
 		generatePassphrase(); 
@@ -1011,6 +1011,7 @@
 			<a href="/contact" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Contact Us</a>
 			<a href="/password-guide" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Password Guide</a>
 			<a href="/donate" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Support Us</a>
+			<a href="https://github.com/LunarVigilante/memphrase" target="_blank" rel="noopener noreferrer" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Source Code (GitHub)</a>
 		</div>
 		<p class="text-xs text-slate-500">
 			&copy; {currentYear} MemPhrase. All rights reserved.

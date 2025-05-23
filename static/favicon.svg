@@ -1,6 +1,6 @@
 <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
   <style>
-    .text-passpoet-favicon {
+    .text-memphrase-favicon {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
       font-size: 28px;
       font-weight: bold;
@@ -9,5 +9,5 @@
       dominant-baseline: central;
     }
   </style>
-  <text x="16" y="17" class="text-passpoet-favicon">M</text>
+  <text x="16" y="17" class="text-memphrase-favicon">M</text>
 </svg> 

@@ -6,19 +6,21 @@ import {
     SMTP_USER,
     SMTP_PASS,
     EMAIL_TO_ADDRESS,
-    EMAIL_FROM_ADDRESS
+    EMAIL_FROM_ADDRESS,
+    RECAPTCHA_V2_SECRET_KEY
 } from '$env/static/private';
 
 // Basic email validation regex (not exhaustive, but good for most cases)
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, fetch: svelteKitFetch }) => {
     try {
         const data = await request.formData();
         const name = data.get('name') as string;
         const email = data.get('email') as string;
         const subject = data.get('subject') as string;
         const message = data.get('message') as string;
+        const recaptchaResponse = data.get('g-recaptcha-response') as string;
 
         // --- Validation ---
         if (!name || !email || !subject || !message) {
@@ -41,6 +43,34 @@ export const POST: RequestHandler = async ({ request }) => {
                 headers: { 'Content-Type': 'application/json' }
             });
         }
+
+        // --- reCAPTCHA Verification ---
+        if (!RECAPTCHA_V2_SECRET_KEY) {
+            console.error('reCAPTCHA secret key is not set.');
+            return new Response(JSON.stringify({ message: 'Server configuration error (reCAPTCHA).' }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+        if (!recaptchaResponse) {
+            return new Response(JSON.stringify({ message: 'reCAPTCHA verification failed. Please try again.' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        const verificationURL = `https://www.google.com/recaptcha/api/siteverify?secret=${RECAPTCHA_V2_SECRET_KEY}&response=${recaptchaResponse}`;
+        const recaptchaVerification = await svelteKitFetch(verificationURL, { method: 'POST' });
+        const verificationJson = await recaptchaVerification.json();
+
+        if (!verificationJson.success) {
+            console.error('reCAPTCHA verification failed:', verificationJson['error-codes']);
+            return new Response(JSON.stringify({ message: 'reCAPTCHA verification failed. Are you a robot?' }), {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+        // --- End reCAPTCHA Verification ---
 
         // --- Email Sending Logic ---
         if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS || !EMAIL_TO_ADDRESS || !EMAIL_FROM_ADDRESS) {
