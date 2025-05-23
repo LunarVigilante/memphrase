@@ -68,11 +68,10 @@
 					Buy Me a Coffee on Ko-fi
 				</a>
 
-				<a href="#" target="_blank" rel="noopener noreferrer" 
-				class="inline-block bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-colors duration-150 text-base no-underline button-gleam ml-4"
+				<div class="inline-block bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-colors duration-150 text-base no-underline button-gleam ml-4"
 				hidden>
 					Become a Patron (Example)
-				</a>
+				</div>
 			</div>
 
 			<p class="text-slate-300 mb-4">
@@ -121,7 +120,7 @@
 	.prose h1 {
 		margin-bottom: 0.5em;
 	}
-	.prose p, .prose ul {
+	.prose p {
 		margin-bottom: 1em;
 		line-height: 1.6;
 	}
