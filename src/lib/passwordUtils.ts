@@ -100,21 +100,19 @@ function generateMemorableWordPattern(numWords: number, selectedCategories: stri
 			break;
 			
 		case 3:
-			// Three words: Adjective + Adjective + Noun or Adjective + Noun + Verb
-			if (adjectives.length > 0 && nouns.length > 0) {
-				if (verbs.length > 0 && Math.random() > 0.5) {
-					// Pattern: Adjective + Noun + Verb (like "BigDogRuns")
-					wordsArr.push(getMemorableWord(adjectives));
-					wordsArr.push(getMemorableWord(nouns));
-					wordsArr.push(getMemorableWord(verbs));
-				} else {
-					// Pattern: Adjective + Adjective + Noun (like "BigRedCar")
-					const twoAdjectives = getRandomElements(adjectives, 2);
-					wordsArr.push(...twoAdjectives);
-					wordsArr.push(getMemorableWord(nouns));
-				}
+			// Three words: Default to Adjective + Adjective + Noun pattern for better memorability
+			if (adjectives.length >= 2 && nouns.length > 0) {
+				// Pattern: Adjective + Adjective + Noun (like "BigRedCar")
+				const twoAdjectives = getRandomElements(adjectives, 2);
+				wordsArr.push(twoAdjectives[0], twoAdjectives[1]);
+				wordsArr.push(getMemorableWord(nouns));
+			} else if (adjectives.length > 0 && nouns.length > 0 && verbs.length > 0) {
+				// Fallback: Adjective + Noun + Verb (like "BigDogRuns")
+				wordsArr.push(getMemorableWord(adjectives));
+				wordsArr.push(getMemorableWord(nouns));
+				wordsArr.push(getMemorableWord(verbs));
 			} else {
-				// Fallback to diverse selection
+				// Final fallback to diverse selection
 				const allAvailable = [...adjectives, ...nouns, ...verbs];
 				const selected = getRandomElements(allAvailable, 3);
 				wordsArr.push(...selected);
@@ -123,9 +121,9 @@ function generateMemorableWordPattern(numWords: number, selectedCategories: stri
 			
 		case 4:
 			// Four words: Adjective + Adjective + Noun + Verb pattern
-			if (adjectives.length > 0 && nouns.length > 0 && verbs.length > 0) {
+			if (adjectives.length >= 2 && nouns.length > 0 && verbs.length > 0) {
 				const twoAdjectives = getRandomElements(adjectives, 2);
-				wordsArr.push(...twoAdjectives);
+				wordsArr.push(twoAdjectives[0], twoAdjectives[1]);
 				wordsArr.push(getMemorableWord(nouns));
 				wordsArr.push(getMemorableWord(verbs));
 			} else {
@@ -271,11 +269,7 @@ export function generatePassphraseService(options: PassphraseOptions): string {
 					wordsArr.push(word);
 				}
 			}
-			// Shuffle the entire wordsArr for fallback cases
-			for (let i = wordsArr.length - 1; i > 0; i--) { 
-				const j = Math.floor(Math.random() * (i + 1));
-				[wordsArr[i], wordsArr[j]] = [wordsArr[j], wordsArr[i]];
-			}
+			// Don't shuffle the wordsArr to maintain pattern integrity
 		}
 	}
 
@@ -415,66 +409,89 @@ export function calculatePassphraseStrength(
         return { score: 0, label: '-', colorClass: 'text-red-400', entropy: 0 };
     }
 
-	if (opts.generationMode === 'randomChars') {
-		let poolSize = 0;
-		if (opts.randomIncludeLowercase) poolSize += 26;
-		if (opts.randomIncludeUppercase) poolSize += 26;
-		if (opts.randomIncludeNumbers) poolSize += 10;
-		if (opts.randomIncludeSymbols) {
-			poolSize += (opts.customSymbols && opts.customSymbols.length > 0) ? opts.customSymbols.length : DEFAULT_PASSPHRASE_SYMBOLS.length;
+	// Character-based entropy calculation - analyze the actual passphrase
+	if (passphrase && passphrase.length > 0) {
+		// Determine character space by analyzing the actual passphrase
+		let charSpace = 0;
+		const hasLowercase = /[a-z]/.test(passphrase);
+		const hasUppercase = /[A-Z]/.test(passphrase);
+		const hasDigits = /[0-9]/.test(passphrase);
+		const hasSymbols = /[^a-zA-Z0-9]/.test(passphrase);
+		
+		if (hasLowercase) charSpace += 26;
+		if (hasUppercase) charSpace += 26;
+		if (hasDigits) charSpace += 10;
+		if (hasSymbols) {
+			// Count unique symbols in the passphrase for more accurate calculation
+			const symbolsInPassphrase = passphrase.match(/[^a-zA-Z0-9]/g) || [];
+			const uniqueSymbols = new Set(symbolsInPassphrase);
+			charSpace += Math.max(uniqueSymbols.size, 10); // Minimum 10 for typical symbol space
 		}
-
-		if (poolSize > 0 && opts.randomPasswordLength && opts.randomPasswordLength > 0) {
-			totalEntropy = opts.randomPasswordLength * Math.log2(poolSize);
-		} else {
-			totalEntropy = 0;
+		
+		// Calculate entropy based on actual character space and length
+		if (charSpace > 1) {
+			totalEntropy = passphrase.length * Math.log2(charSpace);
 		}
-	} else { // Word-based calculation
-		// 1. Word Entropy
-		if (opts.numWords > 0 && opts.selectedCategories && opts.selectedCategories.length > 0) {
-			// Estimate average pool size from selected categories for simplicity, or use a fixed large N if many diverse are selected.
-			// A more precise way would be to get the union of all words in selectedCategories.
-			// For now, let's use an approximation based on the number of selected categories and their typical sizes.
-			let effectiveWordPool = 0;
-			const uniqueWordsInSelectedCategories = new Set<string>();
-			opts.selectedCategories.forEach(catName => {
-				const category = getCategoryByName(catName, allNestedCategories);
-				if (category && category.words) {
-					category.words.forEach(word => uniqueWordsInSelectedCategories.add(word));
-				}
-			});
-			effectiveWordPool = uniqueWordsInSelectedCategories.size;
+	}
 
-			if (effectiveWordPool > 1) { 
-				totalEntropy += opts.numWords * Math.log2(effectiveWordPool);
+	// Fallback calculation if no passphrase or using old method for specific cases
+	if (totalEntropy === 0) {
+		if (opts.generationMode === 'randomChars') {
+			let poolSize = 0;
+			if (opts.randomIncludeLowercase) poolSize += 26;
+			if (opts.randomIncludeUppercase) poolSize += 26;
+			if (opts.randomIncludeNumbers) poolSize += 10;
+			if (opts.randomIncludeSymbols) {
+				poolSize += (opts.customSymbols && opts.customSymbols.length > 0) ? opts.customSymbols.length : DEFAULT_PASSPHRASE_SYMBOLS.length;
 			}
-		}
 
-		// 2. Capitalization Entropy
-		if (opts.capitalize && opts.numWords > 0) {
-			totalEntropy += opts.numWords; // Each word offers 2 choices (cap or no cap), so 1 bit per word
-		}
+			if (poolSize > 0 && opts.randomPasswordLength && opts.randomPasswordLength > 0) {
+				totalEntropy = opts.randomPasswordLength * Math.log2(poolSize);
+			}
+		} else { // Word-based calculation - fallback only
+			// 1. Word Entropy
+			if (opts.numWords > 0 && opts.selectedCategories && opts.selectedCategories.length > 0) {
+				let effectiveWordPool = 0;
+				const uniqueWordsInSelectedCategories = new Set<string>();
+				opts.selectedCategories.forEach(catName => {
+					const category = getCategoryByName(catName, allNestedCategories);
+					if (category && category.words) {
+						category.words.forEach(word => uniqueWordsInSelectedCategories.add(word));
+					}
+				});
+				effectiveWordPool = uniqueWordsInSelectedCategories.size;
 
-		// 3. Digit Entropy (for word-based)
-		if (opts.numDigits && opts.numDigits > 0) {
-			totalEntropy += opts.numDigits * Math.log2(10);
-		}
+				if (effectiveWordPool > 1) { 
+					totalEntropy += opts.numWords * Math.log2(effectiveWordPool);
+				}
+			}
 
-		// 4. Symbol Entropy (for word-based)
-		if (opts.numSymbols && opts.numSymbols > 0) {
-			const symbolsToConsider = (opts.customSymbols && opts.customSymbols.length > 0) ? opts.customSymbols : DEFAULT_PASSPHRASE_SYMBOLS.split('');
-			if (symbolsToConsider.length > 0) {
-				totalEntropy += opts.numSymbols * Math.log2(symbolsToConsider.length);
+			// 2. Capitalization Entropy
+			if (opts.capitalize && opts.numWords > 0) {
+				totalEntropy += opts.numWords; // Each word offers 2 choices (cap or no cap), so 1 bit per word
+			}
+
+			// 3. Digit Entropy (for word-based)
+			if (opts.numDigits && opts.numDigits > 0) {
+				totalEntropy += opts.numDigits * Math.log2(10);
+			}
+
+			// 4. Symbol Entropy (for word-based)
+			if (opts.numSymbols && opts.numSymbols > 0) {
+				const symbolsToConsider = (opts.customSymbols && opts.customSymbols.length > 0) ? opts.customSymbols : DEFAULT_PASSPHRASE_SYMBOLS.split('');
+				if (symbolsToConsider.length > 0) {
+					totalEntropy += opts.numSymbols * Math.log2(symbolsToConsider.length);
+				}
 			}
 		}
 	}
 
 	// Determine normalizedScore based on entropy thresholds
 	let normalizedScore = 0;
-	if (totalEntropy < 15)      normalizedScore = 0; // Very Weak
-	else if (totalEntropy < 22) normalizedScore = 1; // Weak 
-	else if (totalEntropy < 35) normalizedScore = 2; // Medium
-	else if (totalEntropy < 50) normalizedScore = 3; // Strong
+	if (totalEntropy < 25)      normalizedScore = 0; // Very Weak
+	else if (totalEntropy < 40) normalizedScore = 1; // Weak 
+	else if (totalEntropy < 60) normalizedScore = 2; // Medium
+	else if (totalEntropy < 80) normalizedScore = 3; // Strong
 	else                         normalizedScore = 4; // Very Strong
 
 	const strengthLevels: Array<{ label: string; colorClass: string }> = [
@@ -513,14 +530,14 @@ export function describeWordPattern(numWords: number, selectedCategories: string
 			}
 			return 'Two related words';
 		case 3:
-			if (adjectives.length > 0 && nouns.length > 0 && verbs.length > 0) {
-				return 'Adjective + Noun + Verb (e.g., "BigDogRuns")';
-			} else if (adjectives.length > 0 && nouns.length > 0) {
+			if (adjectives.length >= 2 && nouns.length > 0) {
 				return 'Adjective + Adjective + Noun (e.g., "BigRedCar")';
+			} else if (adjectives.length > 0 && nouns.length > 0 && verbs.length > 0) {
+				return 'Adjective + Noun + Verb (e.g., "BigDogRuns")';
 			}
 			return 'Three related words';
 		case 4:
-			if (adjectives.length > 0 && nouns.length > 0 && verbs.length > 0) {
+			if (adjectives.length >= 2 && nouns.length > 0 && verbs.length > 0) {
 				return 'Adjective + Adjective + Noun + Verb';
 			}
 			return 'Four diverse words';

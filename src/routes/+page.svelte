@@ -14,6 +14,15 @@
 	import SymbolSelectorModal from '$lib/components/SymbolSelectorModal.svelte'; // Import the modal
 	import PasswordStrengthMeter from '$lib/components/PasswordStrengthMeter.svelte';
 	import RadioGroup from '$lib/components/RadioGroup.svelte';
+	import { browser } from '$app/environment';
+	import AnimatedStrengthMeter from '$lib/components/AnimatedStrengthMeter.svelte';
+	import LoadingIndicator from '$lib/components/LoadingIndicator.svelte';
+	// Import optimized utilities
+	import {
+		generateMemorableWordPatternOptimized,
+		calculatePassphraseStrengthOptimized,
+		type OptimizedStrengthResult
+	} from '../lib/passwordUtilsOptimized';
 
 	interface MemPhraseSettings {
 		numWords: number;
@@ -45,7 +54,7 @@
 
 	// State for passphrase generation - with new defaults
 	let numWords = 3;
-	let separator = '-';
+	let separator = ''; // Changed from '-' to empty by default
 	let capitalize = true;
 	let numDigits = 2; // For word-based
 	let numSymbols = 1; // For word-based
@@ -96,6 +105,9 @@
 	let passphrase = '';
 	let prevPassphrase = ''; // To track changes to passphrase for afterUpdate
 	let passphraseStrength: PassphraseStrengthResult | null = null; // State for strength
+	let optimizedStrength: OptimizedStrengthResult | null = null; // New optimized strength
+	let isGenerating = false; // Loading state for generation
+	let useOptimizedGeneration = true; // Feature flag for optimized generation
 
 	let copyButtonText = 'Copy';
 
@@ -160,68 +172,140 @@
 		}
 	}
 
-	function generatePassphrase() {
-		const currentValidPassphrase = passphrase && !passphrase.startsWith('Error:') && !passphrase.startsWith('Invalid Options');
+	// Function to generate passphrase
+	async function generatePassphrase() {
+		if (!browser) return;
+		
+		isGenerating = true;
+		optimizedStrength = null;
+		
+		try {
+			if (generationMode === 'words') {
+				if (selectedCategories.length === 0) {
+					noCategoriesSelectedError = true;
+					passphrase = 'Please select at least one word category.';
+					isGenerating = false;
+					return;
+				}
+				noCategoriesSelectedError = false;
 
-		if (generationMode === 'words' && noCategoriesSelectedError) {
-			if (currentValidPassphrase) {
-				previousPassphrase = passphrase;
-				canShowPrevious = true;
+				if (useOptimizedGeneration) {
+					// Use optimized generation with lazy loading
+					const result = await generateMemorableWordPatternOptimized(numWords, selectedCategories);
+					
+					if (result.words.length > 0) {
+						// Apply capitalization and build passphrase
+						const processedWords = result.words.map(word => 
+							capitalize ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : word.toLowerCase()
+						);
+						
+						let basePassphrase = processedWords.join(separator);
+						
+						// Add numbers and symbols
+						let numbersToAdd = '';
+						let symbolsToAdd = '';
+						
+						if (numDigits > 0) {
+							for (let i = 0; i < numDigits; i++) {
+								numbersToAdd += Math.floor(Math.random() * 10).toString();
+							}
+						}
+						
+						if (numSymbols > 0) {
+							const symbolsArray = customSymbolsWordMode.length > 0 ? customSymbolsWordMode : DEFAULT_PASSPHRASE_SYMBOLS;
+							for (let i = 0; i < numSymbols; i++) {
+								symbolsToAdd += symbolsArray[Math.floor(Math.random() * symbolsArray.length)];
+							}
+						}
+						
+						// Apply positioning logic
+						if (charGrouping === 'together') {
+							const combined = numbersToAdd + symbolsToAdd;
+							if (numSymPosition === 'prepend') {
+								passphrase = combined + basePassphrase;
+							} else if (numSymPosition === 'append') {
+								passphrase = basePassphrase + combined;
+							} else { // interspersed
+								passphrase = basePassphrase + combined;
+							}
+						} else { // separate
+							if (numSymPosition === 'prepend') {
+								passphrase = numbersToAdd + symbolsToAdd + basePassphrase;
+							} else if (numSymPosition === 'append') {
+								passphrase = basePassphrase + numbersToAdd + symbolsToAdd;
+							} else { // interspersed
+								passphrase = basePassphrase + numbersToAdd + symbolsToAdd;
+							}
+						}
+						
+						// Calculate optimized strength
+						const hasDigits = numDigits > 0;
+						const hasSymbols = numSymbols > 0;
+						const hasLowercase = !capitalize || passphrase.toLowerCase() !== passphrase;
+						const hasUppercase = capitalize || passphrase.toUpperCase() !== passphrase;
+						
+						optimizedStrength = calculatePassphraseStrengthOptimized(
+							passphrase, hasDigits, hasSymbols, hasLowercase, hasUppercase
+						);
+						
+						// Add loading progress to strength result
+						if (optimizedStrength) {
+							optimizedStrength.loadingProgress = result.loadingProgress;
+						}
+					} else {
+						// Fallback to original generation
+						passphrase = generatePassphraseService({
+							generationMode: 'words',
+							numWords,
+							selectedCategories,
+							capitalize,
+							separator,
+							numDigits,
+							numSymbols,
+							numSymPosition,
+							charGrouping,
+							customSymbols: customSymbolsWordMode
+						});
+					}
+				} else {
+					// Use original generation method
+					passphrase = generatePassphraseService({
+						generationMode: 'words',
+						numWords,
+						selectedCategories,
+						capitalize,
+						separator,
+						numDigits,
+						numSymbols,
+						numSymPosition,
+						charGrouping,
+						customSymbols: customSymbolsWordMode
+					});
+				}
 			} else {
-				canShowPrevious = !!previousPassphrase;
+				// Random character generation
+				passphrase = generatePassphraseService({
+					generationMode: 'randomChars',
+					numWords: 0,
+					selectedCategories: [],
+					separator: '',
+					capitalize: false,
+					numDigits: 0,
+					numSymbols: 0,
+					numSymPosition: 'append',
+					randomPasswordLength,
+					randomIncludeLowercase,
+					randomIncludeUppercase,
+					randomIncludeNumbers,
+					randomIncludeSymbols,
+					customSymbols: customSymbolsRandomMode
+				});
 			}
-			passphrase = 'Invalid Options: Select word categories';
-			return;
-		}
-		if (generationMode === 'randomChars' && !randomIncludeLowercase && !randomIncludeUppercase && !randomIncludeNumbers && !randomIncludeSymbols) {
-			if (currentValidPassphrase) {
-				previousPassphrase = passphrase;
-				canShowPrevious = true;
-			} else {
-				canShowPrevious = !!previousPassphrase;
-			}
-			passphrase = 'Invalid Options: Select character types';
-			return;
-		}
-
-		const optionsToGenerate: PassphraseOptions = {
-			generationMode,
-			// Word-based options
-			numWords,
-			separator,
-			capitalize,
-			numDigits: generationMode === 'words' ? numDigitsForWordMode : 0,
-			numSymbols: generationMode === 'words' ? numSymbolsForWordMode : 0,
-			selectedCategories: generationMode === 'words' ? selectedCategories : [],
-			numSymPosition,
-			charGrouping,
-			// Random char options
-			randomPasswordLength: generationMode === 'randomChars' ? randomPasswordLength : undefined,
-			randomIncludeLowercase: generationMode === 'randomChars' ? randomIncludeLowercase : undefined,
-			randomIncludeUppercase: generationMode === 'randomChars' ? randomIncludeUppercase : undefined,
-			randomIncludeNumbers: generationMode === 'randomChars' ? randomIncludeNumbers : undefined,
-			randomIncludeSymbols: generationMode === 'randomChars' ? randomIncludeSymbols : undefined,
-			customSymbols: generationMode === 'words' ? customSymbolsWordMode : customSymbolsRandomMode
-		};
-		const newPassphrase = generatePassphraseService(optionsToGenerate);
-
-		if (currentValidPassphrase && passphrase !== newPassphrase) {
-			previousPassphrase = passphrase;
-			canShowPrevious = true;
-		} else if (!currentValidPassphrase && newPassphrase && !newPassphrase.startsWith('Error:')) {
-			// This is the first successful generation after an error or initial load with no valid previous.
-			// previousPassphrase remains as it was, canShowPrevious depends on if previousPassphrase has content.
-			canShowPrevious = !!previousPassphrase; 
-		} else if (newPassphrase.startsWith('Error:')) {
-			// If generation results in an error (should be caught by noCategoriesSelectedError, but as a fallback)
-			canShowPrevious = !!previousPassphrase;
-		}
-
-		passphrase = newPassphrase;
-
-		// Auto-copy if enabled and passphrase is valid
-		if (autoCopy && passphrase && !passphrase.startsWith('Error:') && !passphrase.startsWith('Invalid Options')) {
-			copyPassword();
+		} catch (error) {
+			console.error('Error generating passphrase:', error);
+			passphrase = 'Error generating passphrase. Please try again.';
+		} finally {
+			isGenerating = false;
 		}
 	}
 
@@ -286,7 +370,7 @@
 			try {
 				const parsedSettings: MemPhraseSettings = JSON.parse(savedSettings);
 				numWords = parsedSettings.numWords || 4;
-				separator = parsedSettings.separator || '.';
+				separator = parsedSettings.separator !== undefined ? parsedSettings.separator : '';
 				capitalize = parsedSettings.capitalize === undefined ? true : parsedSettings.capitalize;
 				// numDigits and numSymbols are for word-based
 				numDigits = parsedSettings.numDigits === undefined ? 2 : Number(parsedSettings.numDigits);
@@ -378,7 +462,7 @@
 	function resetToDefaults() {
 		// Word-based defaults
 		numWords = 3;
-		separator = '-';
+		separator = ''; // Changed from '-' to empty
 		capitalize = true;
 		numDigits = 2;
 		numSymbols = 1;
@@ -545,6 +629,11 @@
 		<a href="#settings" class="skip-link bg-green-500 text-white px-4 py-2 rounded-md ml-2 focus:outline-none focus:ring-2 focus:ring-green-400">Skip to settings</a>
 	</div>
 
+	<!-- Privacy/Security Notice -->
+	<p class="text-xs text-slate-500 text-center">
+		{generationMode === 'words' ? 'Passphrases' : 'Passwords'} are generated entirely in your browser and are not stored or transmitted.
+	</p>
+
 	<div class="flex items-center justify-center">
 		<img src="/memphrase-logo.png" alt="MemPhrase Logo" class="h-12 w-12 md:h-16 md:w-16 mr-2" loading="lazy" />
 		<h1 class="text-center text-4xl font-bold text-gray-100 md:text-5xl [text-shadow:_2px_2px_5px_rgb(0_0_0_/_0.6)]">
@@ -615,7 +704,15 @@
 	</section>
 
 	<!-- Passphrase Strength Indicator -->
-	<PasswordStrengthMeter strength={passphraseStrength} hasError={noCategoriesSelectedError} />
+	{#if useOptimizedGeneration && optimizedStrength}
+		<AnimatedStrengthMeter 
+			strength={optimizedStrength} 
+			hasError={noCategoriesSelectedError}
+			showAnimation={true}
+		/>
+	{:else}
+		<PasswordStrengthMeter strength={passphraseStrength} hasError={noCategoriesSelectedError} />
+	{/if}
 
 	{#if generationMode === 'words' && !noCategoriesSelectedError && numWords > 0}
 		<div class="text-center -mt-4 mb-0">
@@ -626,10 +723,6 @@
 			</CustomTooltip>
 		</div>
 	{/if}
-
-	<p class="text-xs text-slate-500 text-center {generationMode === 'words' && !noCategoriesSelectedError && numWords > 0 ? '-mt-4' : ''}">
-		{generationMode === 'words' ? 'Passphrases' : 'Passwords'} are generated entirely in your browser and are not stored or transmitted.
-	</p>
 
 	<!-- Generate Button -->
 	<button
@@ -766,7 +859,7 @@
 
 						<!-- Separator -->
 						<div class="flex-1 flex justify-center md:flex-grow-[1]">
-							<CustomTooltip text="Character(s) to place between words (and numbers/symbols if at ends). E.g., ., _, or space." position="top">
+							<CustomTooltip text="Character(s) to place between words. Leave empty for no separator (words will be joined together). E.g., -, _, ., or space." position="top">
 								<div class="mt-4 md:mt-8 flex flex-col items-center">
 									<label for="separator" class="mb-1 block text-sm font-medium text-gray-300">Separator</label>
 									<input 
@@ -774,10 +867,13 @@
 										id="separator" 
 										bind:value={separator}
 										maxlength="3"
-										class="block w-20 rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500 text-center"
+										placeholder="(none)"
+										class="block w-24 rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500 text-center placeholder:text-gray-500"
 										aria-describedby="separator-help"
 									/>
-									<p id="separator-help" class="text-xs text-gray-500 mt-1 text-center">Max 3 characters</p>
+									<p id="separator-help" class="text-xs text-gray-500 mt-1 text-center max-w-20">
+										{separator ? `Between words: "${separator}"` : 'No separator (joined)'}
+									</p>
 								</div>
 							</CustomTooltip>
 						</div>

@@ -14,6 +14,13 @@ import { conceptsIdeas } from './conceptsIdeas';
 import { actionVerbs } from './actionVerbs'; // New primary verb list
 import { stateVerbs } from './stateVerbs'; // New import
 
+// Import additional word lists
+import { technology } from './technology';
+import { nature } from './nature';
+import { emotions } from './emotions';
+import { occupations } from './occupations';
+import { transportation } from './transportation';
+
 // Redefine WordCategory for nesting
 export interface WordCategory {
   name: string;            // e.g., "Nouns" (parent) or "Animals" (child/leaf)
@@ -31,7 +38,8 @@ export const categories: WordCategory[] = [
       { name: 'General Adjectives', words: generalAdjectives },
       { name: 'Colors', words: colors },
       { name: 'Qualities/Traits', words: qualitiesTraits },
-      { name: 'Sizes/Shapes', words: sizesShapes }
+      { name: 'Sizes/Shapes', words: sizesShapes },
+      { name: 'Emotions', words: emotions }
     ]
   },
   {
@@ -42,7 +50,11 @@ export const categories: WordCategory[] = [
       { name: 'Common Objects', words: commonObjects },
       { name: 'Foods', words: foods },
       { name: 'Places', words: places },
-      { name: 'Concepts/Ideas', words: conceptsIdeas }
+      { name: 'Concepts/Ideas', words: conceptsIdeas },
+      { name: 'Technology', words: technology },
+      { name: 'Nature', words: nature },
+      { name: 'Occupations', words: occupations },
+      { name: 'Transportation', words: transportation }
     ]
   },
   {
@@ -63,7 +75,9 @@ export const defaultCategories = [
     'Animals',
     'Common Objects',
     'Foods',
-    'Places'
+    'Places',
+    'Nature',
+    'Technology'
 ];
 
 // Helper function to get all leaf category names (useful for validation or other logic if needed)
