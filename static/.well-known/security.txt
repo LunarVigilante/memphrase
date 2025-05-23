@@ -1,0 +1,15 @@
+Contact: https://github.com/LunarVigilante/memphrase/security/advisories/new
+Expires: 2025-12-31T23:59:59.000Z
+Preferred-Languages: en
+Canonical: https://memphrase.com/.well-known/security.txt
+
+# Security Policy
+# If you discover a security vulnerability in MemPhrase, please report it through:
+# 1. GitHub Security Advisories (preferred): https://github.com/LunarVigilante/memphrase/security/advisories/new
+# 2. Create a private issue on GitHub if needed
+# 
+# Please do not report security vulnerabilities through public GitHub issues,
+# discussions, or any other public forum.
+#
+# We will acknowledge receipt of your vulnerability report as soon as possible
+# and will strive to keep you informed of our progress. 
