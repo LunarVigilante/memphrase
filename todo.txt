@@ -72,6 +72,16 @@
 - [ ] Implement password expiry reminders
 - [ ] Add password complexity analyzer
 
+## ADDITIONAL SECURITY TOOLS (Phase 2 - 2-3 weeks)
+- [ ] API Key Generator (random hex, base64, custom formats)
+- [ ] TOTP Secret Generator (for 2FA setup with QR code)
+- [ ] Recovery Code Generator (for backup codes - 8-12 one-time codes)
+- [ ] UUID/GUID Generator (v4 random, v7 timestamp-based)
+- [ ] MAC Address Generator (for development/testing)
+- [ ] Color Palette Generator (for design projects)
+- [ ] Lorem Ipsum Generator (multilingual text generation)
+- [ ] Checksum Generator (MD5, SHA1, SHA256 for file verification)
+
 ## INTERNATIONALIZATION (Phase 3 - 2-3 weeks)
 - [ ] Set up paraglide for UI translations
 - [ ] Create English language file

@@ -24,12 +24,12 @@
 	
 	// Purpose-specific recommendations
 	const purposeRecommendations = {
-		api: { bytes: 32, format: 'base64url' as const, description: 'API authentication keys' },
-		jwt: { bytes: 32, format: 'base64' as const, description: 'JWT signing secrets' },
-		encryption: { bytes: 32, format: 'hex' as const, description: 'AES-256 encryption keys' },
-		session: { bytes: 32, format: 'base64url' as const, description: 'Session tokens' },
-		webhook: { bytes: 32, format: 'hex' as const, description: 'Webhook signing secrets' },
-		general: { bytes: 32, format: 'base64url' as const, description: 'General purpose secrets' }
+		api: { bytes: 32, format: 'base64url' as const, description: 'Secure API authentication keys for REST endpoints and bearer tokens' },
+		jwt: { bytes: 32, format: 'base64' as const, description: 'Strong signing secrets for JSON Web Tokens (HMAC-SHA256)' },
+		encryption: { bytes: 32, format: 'hex' as const, description: 'AES-256 encryption keys for symmetric cryptography' },
+		session: { bytes: 32, format: 'base64url' as const, description: 'Unique session identifiers with high entropy for user authentication' },
+		webhook: { bytes: 32, format: 'hex' as const, description: 'HMAC signing secrets for webhook payload verification' },
+		general: { bytes: 32, format: 'base64url' as const, description: 'Versatile cryptographic keys suitable for various security applications' }
 	};
 
 	const MIN_BYTES = 16;
