@@ -1,0 +1,123 @@
+# MemPhrase TODO List
+# Generated from Code Review - 2024
+
+## IMMEDIATE FIXES (High Priority)
+- [ ] Fix remaining accessibility warnings in src/routes/+page.svelte (lines 817, 844)
+- [ ] Fix label association issues in src/routes/secret-key-generator/+page.svelte
+- [ ] Add loading="lazy" to all images (logo, etc.)
+- [ ] Add meta descriptions to all pages
+- [ ] Add aria-label to icon-only buttons (⚙️ symbol selector button)
+- [ ] Fix dialog element tabindex warning in SymbolSelectorModal
+
+## QUICK WINS (1-2 days)
+- [ ] Implement proper focus management for modals
+- [ ] Add ARIA live regions for dynamic content updates
+- [ ] Add skip navigation links
+- [ ] Validate separator input (limit to single characters or specific patterns)
+- [ ] Validate custom symbols are single characters
+- [ ] Remove duplicate CSS styles
+- [ ] Use CSS custom properties for theme colors
+- [ ] Optimize Tailwind config to purge unused styles
+
+## ARCHITECTURE IMPROVEMENTS (1 week)
+- [ ] Extract password strength meter into separate component
+- [ ] Create reusable RadioGroup component
+- [ ] Extract form sections into components (WordCategories, SecurityLevels)
+- [ ] Create Svelte store for persisted settings (replace localStorage logic)
+- [ ] Implement lazy loading for word lists based on selected categories
+- [ ] Add code splitting for /secret-key-generator route
+- [ ] Memoize expensive reactive calculations
+
+## SECURITY ENHANCEMENTS (3-5 days)
+- [ ] Add Content Security Policy headers
+- [ ] Implement rate limiting for API endpoints
+- [ ] Add input sanitization for all user inputs
+- [ ] Audit crypto implementation for best practices
+- [ ] Add security.txt file
+
+## USER EXPERIENCE (1-2 weeks)
+- [ ] Add loading states for initial password generation
+- [ ] Animate strength meter changes
+- [ ] Add visual feedback when settings change
+- [ ] Improve error messages for edge cases
+- [ ] Add password history (last 5-10 generated)
+- [ ] Implement favorites/saved passwords (local storage only)
+- [ ] Add tooltips for all settings
+- [ ] Improve mobile responsive design
+
+## TESTING & DOCUMENTATION (2 weeks)
+- [ ] Add unit tests for passwordUtils.ts
+- [ ] Add component tests for main UI flows
+- [ ] Add E2E tests with Playwright
+- [ ] Create README for src/lib/words/ explaining structure
+- [ ] Document how to add new word categories
+- [ ] Create CONTRIBUTING.md
+- [ ] Add JSDoc comments to complex functions
+- [ ] Set up CI/CD pipeline with tests
+
+## TYPESCRIPT IMPROVEMENTS (3-5 days)
+- [ ] Define interfaces for all component props
+- [ ] Enable stricter TypeScript settings in tsconfig.json
+- [ ] Add type definitions for word categories
+- [ ] Type all event handlers properly
+- [ ] Remove any 'any' types
+
+## FEATURE ENHANCEMENTS (Phase 2 - 1 month)
+- [ ] Export/Import settings as JSON
+- [ ] QR code generation for passwords
+- [ ] Custom word list upload
+- [ ] Pronounceable password generation mode
+- [ ] Password strength requirements checker
+- [ ] Add more encoding options in key generator
+- [ ] Implement password expiry reminders
+- [ ] Add password complexity analyzer
+
+## INTERNATIONALIZATION (Phase 3 - 2-3 weeks)
+- [ ] Set up paraglide for UI translations
+- [ ] Create English language file
+- [ ] Add language switcher component
+- [ ] Support locale-specific word lists
+- [ ] Translate all UI text
+- [ ] Add RTL support
+
+## ADVANCED FEATURES (Phase 3 - 1-2 months)
+- [ ] PWA support (offline functionality)
+- [ ] Browser extension version
+- [ ] Advanced customization UI
+- [ ] Batch password generation
+- [ ] Password strength API endpoint
+- [ ] Integration with password managers
+- [ ] Add biometric protection for saved passwords
+
+## PERFORMANCE OPTIMIZATIONS
+- [ ] Implement virtual scrolling for long word lists
+- [ ] Add service worker for caching
+- [ ] Optimize bundle size (tree shaking)
+- [ ] Add performance monitoring
+- [ ] Implement incremental static regeneration
+
+## MONITORING & ANALYTICS
+- [ ] Add error tracking (Sentry or similar)
+- [ ] Implement privacy-friendly analytics
+- [ ] Add performance metrics
+- [ ] Monitor Web Vitals
+- [ ] Set up uptime monitoring
+
+## COMPLETED ✅
+- [x] Fix TypeScript error in secret-key-generator (as const assertions)
+- [x] Fix accessibility issues in SymbolSelectorModal
+- [x] Fix some label association warnings with fieldset/legend
+- [x] Add link to key generator in footer
+- [x] Enhance key generator with security levels and purposes
+
+---
+# Priority Levels:
+# P1: Immediate fixes (accessibility, bugs)
+# P2: Quick wins (1-2 days each)
+# P3: Architecture improvements (1 week)
+# P4: Feature enhancements (ongoing)
+
+# Time Estimates:
+# Total Phase 1: ~2-3 weeks
+# Total Phase 2: ~1-2 months  
+# Total Phase 3: ~2-3 months 
