@@ -119,7 +119,7 @@
 		
 		<!-- Recommendation text with fade-in animation -->
 		{#if strength.score > 0}
-			<div class="text-center animate-fade-in">
+			<div class="text-center animate-fade-in mt-3">
 				<p class="text-xs text-gray-400">
 					{#if strength.score >= 4}
 						<span class="not-italic">🛡️</span> Excellent! This passphrase is very secure.

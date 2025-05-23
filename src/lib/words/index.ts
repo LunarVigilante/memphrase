@@ -73,7 +73,6 @@ export const defaultCategories = [
     'Colors',
     'Qualities/Traits',
     'Sizes/Shapes',
-    'Emotions',
     'Animals',
     'Common Objects',
     'Foods',

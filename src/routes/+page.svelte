@@ -710,7 +710,7 @@
 	{/if}
 
 	{#if generationMode === 'words' && !noCategoriesSelectedError && numWords > 0}
-		<div class="text-center mt-2 mb-0">
+		<div class="text-center mt-1 mb-2">
 			<CustomTooltip text="MemPhrase uses word patterns to make passphrases more memorable while maintaining security." position="top">
 				<p class="text-xs text-slate-400 italic">
 					Pattern: {describeWordPattern(numWords, selectedCategories)}
@@ -866,9 +866,6 @@
 										class="block w-24 rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500 text-center placeholder:text-gray-500"
 										aria-describedby="separator-help"
 									/>
-									<p id="separator-help" class="text-xs text-gray-500 mt-1 text-center max-w-20">
-										{separator ? `"${separator}"` : 'No separator'}
-									</p>
 								</div>
 							</CustomTooltip>
 						</div>
@@ -1085,10 +1082,12 @@
 		<div class="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-3">
 			<a href="/terms" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Terms and Conditions</a>
 			<a href="/privacy" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Privacy Policy</a>
-			<a href="/contact" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Contact Us</a>
 			<a href="/password-guide" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Password Guide</a>
 			<a href="/secret-key-generator" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Key Generator</a>
 			<a href="/ssh-key-generator" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">SSH Keys</a>
+		</div>
+		<div class="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-3">
+			<a href="/contact" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Contact Us</a>
 			<a href="/donate" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Support Us</a>
 		</div>
 
