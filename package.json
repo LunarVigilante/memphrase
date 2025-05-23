@@ -65,12 +65,9 @@
 		"@rollup/rollup-win32-ia32-msvc": "^4.0.0",
 		"@rollup/rollup-win32-x64-msvc": "^4.0.0"
 	},
-	"description": "MemPhrase is a web-based tool designed to help you generate strong, memorable passphrases. Instead of complex, hard-to-remember passwords, MemPhrase creates phrases from a curated set of word categories, combining them with optional numbers and symbols for enhanced security.",
-	"main": "eslint.config.js",
-	"directories": {
-		"test": "tests"
-	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC"
+	"overrides": {
+		"vite": {
+			"rollup": "npm:@rollup/wasm-node"
+		}
+	}
 }
