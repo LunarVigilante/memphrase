@@ -9,6 +9,15 @@ function getRandomElement<T>(arr: T[]): T {
 	return arr[Math.floor(Math.random() * arr.length)];
 }
 
+// Helper function to get multiple unique random elements from an array
+function getRandomElements<T>(arr: T[], count: number): T[] {
+	if (!arr || arr.length === 0) return [];
+	if (count >= arr.length) return [...arr].sort(() => Math.random() - 0.5);
+	
+	const shuffled = [...arr].sort(() => Math.random() - 0.5);
+	return shuffled.slice(0, count);
+}
+
 export const DEFAULT_PASSPHRASE_SYMBOLS = '!@#$%^&*()_+-=[]{}|;:,.<>?'; // Export for UI use
 
 export interface PassphraseOptions {
@@ -44,6 +53,127 @@ function getWordsFromSelectedByType(parentCategoryName: 'Adjectives' | 'Nouns' |
 		}
 	}
 	return words;
+}
+
+// Enhanced word selection that prioritizes shorter, more common words for memorability
+function getMemorableWord(words: string[]): string {
+	if (!words || words.length === 0) return '';
+	
+	// Prefer shorter words (4-7 characters) as they're easier to remember
+	const shorterWords = words.filter(word => word.length >= 3 && word.length <= 7);
+	const wordPool = shorterWords.length > 0 ? shorterWords : words;
+	
+	return getRandomElement(wordPool);
+}
+
+// Create memorable word patterns based on number of words
+function generateMemorableWordPattern(numWords: number, selectedCategories: string[]): string[] {
+	const adjectives = getWordsFromSelectedByType('Adjectives', selectedCategories);
+	const nouns = getWordsFromSelectedByType('Nouns', selectedCategories);
+	const verbs = getWordsFromSelectedByType('Verbs', selectedCategories);
+	
+	const wordsArr: string[] = [];
+	
+	switch (numWords) {
+		case 1:
+			// Single word: prefer a descriptive noun or adjective
+			if (nouns.length > 0) {
+				wordsArr.push(getMemorableWord(nouns));
+			} else if (adjectives.length > 0) {
+				wordsArr.push(getMemorableWord(adjectives));
+			} else if (verbs.length > 0) {
+				wordsArr.push(getMemorableWord(verbs));
+			}
+			break;
+			
+		case 2:
+			// Two words: Adjective + Noun pattern (like "RedCar" or "FastDog")
+			if (adjectives.length > 0 && nouns.length > 0) {
+				wordsArr.push(getMemorableWord(adjectives));
+				wordsArr.push(getMemorableWord(nouns));
+			} else {
+				// Fallback to any two words from available categories
+				const allAvailable = [...adjectives, ...nouns, ...verbs];
+				const selected = getRandomElements(allAvailable, 2);
+				wordsArr.push(...selected);
+			}
+			break;
+			
+		case 3:
+			// Three words: Adjective + Adjective + Noun or Adjective + Noun + Verb
+			if (adjectives.length > 0 && nouns.length > 0) {
+				if (verbs.length > 0 && Math.random() > 0.5) {
+					// Pattern: Adjective + Noun + Verb (like "BigDogRuns")
+					wordsArr.push(getMemorableWord(adjectives));
+					wordsArr.push(getMemorableWord(nouns));
+					wordsArr.push(getMemorableWord(verbs));
+				} else {
+					// Pattern: Adjective + Adjective + Noun (like "BigRedCar")
+					const twoAdjectives = getRandomElements(adjectives, 2);
+					wordsArr.push(...twoAdjectives);
+					wordsArr.push(getMemorableWord(nouns));
+				}
+			} else {
+				// Fallback to diverse selection
+				const allAvailable = [...adjectives, ...nouns, ...verbs];
+				const selected = getRandomElements(allAvailable, 3);
+				wordsArr.push(...selected);
+			}
+			break;
+			
+		case 4:
+			// Four words: Adjective + Adjective + Noun + Verb pattern
+			if (adjectives.length > 0 && nouns.length > 0 && verbs.length > 0) {
+				const twoAdjectives = getRandomElements(adjectives, 2);
+				wordsArr.push(...twoAdjectives);
+				wordsArr.push(getMemorableWord(nouns));
+				wordsArr.push(getMemorableWord(verbs));
+			} else {
+				// Fallback: try to get at least one from each available category
+				const patterns = [];
+				if (adjectives.length > 0) patterns.push(() => getMemorableWord(adjectives));
+				if (nouns.length > 0) patterns.push(() => getMemorableWord(nouns));
+				if (verbs.length > 0) patterns.push(() => getMemorableWord(verbs));
+				
+				// Fill remaining slots by repeating patterns
+				while (wordsArr.length < numWords && patterns.length > 0) {
+					const patternIndex = wordsArr.length % patterns.length;
+					wordsArr.push(patterns[patternIndex]());
+				}
+			}
+			break;
+			
+		default:
+			// For 5+ words: create a more complex but memorable pattern
+			if (adjectives.length > 0 && nouns.length > 0 && verbs.length > 0) {
+				// Pattern: Multiple adjectives + nouns + verbs in a logical sequence
+				const numAdj = Math.min(Math.ceil(numWords * 0.4), adjectives.length);
+				const numNoun = Math.min(Math.ceil(numWords * 0.4), nouns.length);
+				const numVerb = Math.min(numWords - numAdj - numNoun, verbs.length);
+				
+				wordsArr.push(...getRandomElements(adjectives, numAdj));
+				wordsArr.push(...getRandomElements(nouns, numNoun));
+				wordsArr.push(...getRandomElements(verbs, numVerb));
+				
+				// Fill any remaining slots
+				while (wordsArr.length < numWords) {
+					const allRemaining = [...adjectives, ...nouns, ...verbs];
+					const remaining = allRemaining.filter(word => !wordsArr.includes(word));
+					if (remaining.length > 0) {
+						wordsArr.push(getMemorableWord(remaining));
+					} else {
+						// If we've used all unique words, start reusing
+						wordsArr.push(getMemorableWord([...adjectives, ...nouns, ...verbs]));
+					}
+				}
+			} else {
+				// Fallback to original random selection for edge cases
+				return []; // Will trigger fallback in main function
+			}
+			break;
+	}
+	
+	return wordsArr;
 }
 
 export function generatePassphraseService(options: PassphraseOptions): string {
@@ -102,78 +232,27 @@ export function generatePassphraseService(options: PassphraseOptions): string {
 	}
 
 	if (numWords > 0) {
-		if (numWords === 3) {
-			const adjectives = getWordsFromSelectedByType('Adjectives', selectedCategories);
-			const nouns = getWordsFromSelectedByType('Nouns', selectedCategories);
-
-			// We need at least one adjective word and one noun word to proceed.
-			// For two adjectives, we prefer two different ones if available.
-			if (adjectives.length > 0 && nouns.length > 0) {
-				let adj1 = getRandomElement(adjectives);
-				let adj2: string;
-
-				if (adjectives.length > 1) {
-					let attempts = 0;
-					do {
-						adj2 = getRandomElement(adjectives);
-						attempts++;
-					} while (adj2 === adj1 && attempts < 10); // Try to get a different adjective
-				} else {
-					adj2 = adj1; // If only one adjective word type available, use it twice
-				}
-				
-				let noun = getRandomElement(nouns);
-
+		// Try the new memorable word pattern generation first
+		const memorableWords = generateMemorableWordPattern(numWords, selectedCategories);
+		
+		if (memorableWords.length > 0) {
+			// Apply capitalization to the memorable words
+			for (let word of memorableWords) {
 				if (capitalize) {
-					adj1 = adj1.charAt(0).toUpperCase() + adj1.slice(1).toLowerCase();
-					adj2 = adj2.charAt(0).toUpperCase() + adj2.slice(1).toLowerCase();
-					noun = noun.charAt(0).toUpperCase() + noun.slice(1).toLowerCase();
+					word = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
 				} else {
-					adj1 = adj1.toLowerCase();
-					adj2 = adj2.toLowerCase();
-					noun = noun.toLowerCase();
+					word = word.toLowerCase();
 				}
-				wordsArr.push(adj1, adj2, noun); // Enforce Adjective Adjective Noun order
-			} else {
-				// Fallback to original random selection if not enough variety for A A N structure
-				// This part reuses the existing random selection logic for numWords
-				const activeCategoriesObjects: WordCategory[] = [];
-				for (const name of selectedCategories) {
-					const category = getCategoryByName(name, allNestedCategories);
-					if (category && category.words) { activeCategoriesObjects.push(category); }
-				}
-				if (activeCategoriesObjects.length === 0) return 'Error: Selected categories have no words.'; // Should be caught earlier
-
-				const shuffledActiveCategoriesForWordPicking = [...activeCategoriesObjects].sort(() => Math.random() - 0.5);
-				const numToGuaranteeForWordPicking = Math.min(numWords, shuffledActiveCategoriesForWordPicking.length);
-				for (let i = 0; i < numToGuaranteeForWordPicking; i++) {
-					const cat = shuffledActiveCategoriesForWordPicking[i];
-					let word = getRandomElement(cat.words!);
-					if (capitalize) word = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(); else word = word.toLowerCase();
-					wordsArr.push(word);
-				}
-				if (numWords > numToGuaranteeForWordPicking) {
-					for (let i = numToGuaranteeForWordPicking; i < numWords; i++) {
-						const catIdx = (i - numToGuaranteeForWordPicking) % activeCategoriesObjects.length;
-						const cat = activeCategoriesObjects[catIdx];
-						let word = getRandomElement(cat.words!);
-						if (capitalize) word = word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(); else word = word.toLowerCase();
-						wordsArr.push(word);
-					}
-				}
-				// Shuffle the entire wordsArr for non-structured 3 words or other word counts
-				for (let i = wordsArr.length - 1; i > 0; i--) { 
-					const j = Math.floor(Math.random() * (i + 1));
-					[wordsArr[i], wordsArr[j]] = [wordsArr[j], wordsArr[i]];
-				}
+				wordsArr.push(word);
 			}
-		} else { // Original logic for numWords !== 3
+		} else {
+			// Fallback to original logic if memorable pattern fails
 			const activeCategoriesObjects: WordCategory[] = [];
 			for (const name of selectedCategories) {
 				const category = getCategoryByName(name, allNestedCategories);
 				if (category && category.words) { activeCategoriesObjects.push(category); }
 			}
-			if (activeCategoriesObjects.length === 0 && numWords > 0) return 'Error: Selected categories have no words.';
+			if (activeCategoriesObjects.length === 0) return 'Error: Selected categories have no words.';
 
 			const shuffledActiveCategoriesForWordPicking = [...activeCategoriesObjects].sort(() => Math.random() - 0.5);
 			const numToGuaranteeForWordPicking = Math.min(numWords, shuffledActiveCategoriesForWordPicking.length);
@@ -192,7 +271,7 @@ export function generatePassphraseService(options: PassphraseOptions): string {
 					wordsArr.push(word);
 				}
 			}
-			// Shuffle the entire wordsArr
+			// Shuffle the entire wordsArr for fallback cases
 			for (let i = wordsArr.length - 1; i > 0; i--) { 
 				const j = Math.floor(Math.random() * (i + 1));
 				[wordsArr[i], wordsArr[j]] = [wordsArr[j], wordsArr[i]];
@@ -309,6 +388,7 @@ export interface PassphraseStrengthResult {
 	label: string;
 	colorClass: string;
 	entropy: number;
+	wordPattern?: string; // New field to show the pattern used
 }
 
 const wordListSizes = { // This will be used again for word-based entropy
@@ -413,4 +493,41 @@ export function calculatePassphraseStrength(
 		colorClass: level.colorClass,
 		entropy: parseFloat(totalEntropy.toFixed(1))
 	};
+}
+
+// Function to describe the word pattern being used for user education
+export function describeWordPattern(numWords: number, selectedCategories: string[]): string {
+	const adjectives = getWordsFromSelectedByType('Adjectives', selectedCategories);
+	const nouns = getWordsFromSelectedByType('Nouns', selectedCategories);
+	const verbs = getWordsFromSelectedByType('Verbs', selectedCategories);
+	
+	if (selectedCategories.length === 0) return '';
+	
+	switch (numWords) {
+		case 1:
+			if (nouns.length > 0) return 'Single descriptive word';
+			return 'Single word';
+		case 2:
+			if (adjectives.length > 0 && nouns.length > 0) {
+				return 'Adjective + Noun (e.g., "RedCar")';
+			}
+			return 'Two related words';
+		case 3:
+			if (adjectives.length > 0 && nouns.length > 0 && verbs.length > 0) {
+				return 'Adjective + Noun + Verb (e.g., "BigDogRuns")';
+			} else if (adjectives.length > 0 && nouns.length > 0) {
+				return 'Adjective + Adjective + Noun (e.g., "BigRedCar")';
+			}
+			return 'Three related words';
+		case 4:
+			if (adjectives.length > 0 && nouns.length > 0 && verbs.length > 0) {
+				return 'Adjective + Adjective + Noun + Verb';
+			}
+			return 'Four diverse words';
+		default:
+			if (numWords >= 5) {
+				return `${numWords} words in logical patterns`;
+			}
+			return `${numWords} words`;
+	}
 } 
