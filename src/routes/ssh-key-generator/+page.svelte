@@ -305,9 +305,11 @@ ${generateRandomBase64(96)}
 					<!-- Linux/macOS Instructions -->
 					<div class="space-y-3">
 						<h4 class="text-sm font-medium text-green-400">Linux/macOS:</h4>
+						<p class="text-xs text-gray-400 mb-2">OpenSSH is pre-installed on most Linux distributions and macOS. Open your terminal application to run these commands:</p>
 						<div class="space-y-2 text-xs text-gray-400 ml-3">
 							<div class="space-y-1">
 								<p><strong class="text-gray-300">1. Save the private key:</strong></p>
+								<p class="text-gray-500 mb-1">Open your terminal and create/edit the private key file:</p>
 								<code class="block bg-slate-700 p-2 rounded text-gray-300">
 									nano ~/.ssh/id_{keyType.toLowerCase()}
 								</code>
@@ -316,6 +318,7 @@ ${generateRandomBase64(96)}
 							
 							<div class="space-y-1">
 								<p><strong class="text-gray-300">2. Set correct permissions:</strong></p>
+								<p class="text-gray-500 mb-1">Secure the private key file by restricting access to your user only:</p>
 								<code class="block bg-slate-700 p-2 rounded text-gray-300">
 									chmod 600 ~/.ssh/id_{keyType.toLowerCase()}
 								</code>
@@ -323,6 +326,7 @@ ${generateRandomBase64(96)}
 							
 							<div class="space-y-1">
 								<p><strong class="text-gray-300">3. Add to SSH agent (optional):</strong></p>
+								<p class="text-gray-500 mb-1">Add the key to your SSH agent for easier authentication:</p>
 								<code class="block bg-slate-700 p-2 rounded text-gray-300">
 									ssh-add ~/.ssh/id_{keyType.toLowerCase()}
 								</code>
@@ -330,6 +334,7 @@ ${generateRandomBase64(96)}
 							
 							<div class="space-y-1">
 								<p><strong class="text-gray-300">4. Connect to server:</strong></p>
+								<p class="text-gray-500 mb-1">Use the private key to authenticate with your server:</p>
 								<code class="block bg-slate-700 p-2 rounded text-gray-300">
 									ssh -i ~/.ssh/id_{keyType.toLowerCase()} user@hostname
 								</code>
@@ -340,11 +345,33 @@ ${generateRandomBase64(96)}
 					<!-- Windows Instructions -->
 					<div class="space-y-3">
 						<h4 class="text-sm font-medium text-green-400">Windows:</h4>
+						
+						<!-- OpenSSH Installation Note -->
+						<div class="mb-3 p-3 bg-blue-900/20 border border-blue-500/50 rounded-md">
+							<p class="text-xs text-blue-300 mb-2">
+								<strong>📋 OpenSSH Availability:</strong> OpenSSH is included by default in Windows 10 (version 1803+) and Windows 11. If not installed, you can add it via Windows Features.
+							</p>
+							<details class="text-xs text-blue-300">
+								<summary class="cursor-pointer hover:text-blue-200 mb-1">Click to see OpenSSH installation instructions</summary>
+								<div class="mt-2 space-y-1 text-blue-200">
+									<p><strong class="text-gray-300">Method 1 - Windows Settings:</strong></p>
+									<p>1. Go to Settings > Apps > Optional Features</p>
+									<p>2. Click "Add a feature" and search for "OpenSSH Client"</p>
+									<p>3. Install OpenSSH Client</p>
+									<p><strong class="text-gray-300">Method 2 - PowerShell (as Administrator):</strong></p>
+									<code class="block bg-slate-700 p-2 rounded text-gray-300 mt-1">
+										Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0
+									</code>
+								</div>
+							</details>
+						</div>
+						
 						<div class="space-y-2 text-xs text-gray-400 ml-3">
 							<div class="space-y-1">
 								<p><strong class="text-gray-300">Using OpenSSH (Windows 10+):</strong></p>
 								<div class="space-y-1">
 									<p><strong class="text-gray-300">1. Save the private key:</strong></p>
+									<p class="text-gray-500 mb-1">Open Command Prompt or PowerShell and create the private key file:</p>
 									<code class="block bg-slate-700 p-2 rounded text-gray-300">
 										notepad %USERPROFILE%\.ssh\id_{keyType.toLowerCase()}
 									</code>
@@ -353,6 +380,7 @@ ${generateRandomBase64(96)}
 								
 								<div class="space-y-1">
 									<p><strong class="text-gray-300">2. Set permissions (PowerShell as Admin):</strong></p>
+									<p class="text-gray-500 mb-1">Open PowerShell as Administrator and secure the private key file:</p>
 									<code class="block bg-slate-700 p-2 rounded text-gray-300">
 										icacls %USERPROFILE%\.ssh\id_{keyType.toLowerCase()} /inheritance:r /grant:r %USERNAME%:R
 									</code>
@@ -360,6 +388,7 @@ ${generateRandomBase64(96)}
 								
 								<div class="space-y-1">
 									<p><strong class="text-gray-300">3. Connect to server:</strong></p>
+									<p class="text-gray-500 mb-1">Open Command Prompt or PowerShell and connect using your private key:</p>
 									<code class="block bg-slate-700 p-2 rounded text-gray-300">
 										ssh -i %USERPROFILE%\.ssh\id_{keyType.toLowerCase()} user@hostname
 									</code>
@@ -367,11 +396,12 @@ ${generateRandomBase64(96)}
 							</div>
 							
 							<div class="space-y-1 mt-3">
-								<p><strong class="text-gray-300">Using PuTTY:</strong></p>
+								<p><strong class="text-gray-300">Using PuTTY (Alternative):</strong></p>
+								<p class="text-gray-500 mb-1">If you prefer a GUI application or need compatibility with older Windows versions:</p>
 								<div class="space-y-1">
-									<p class="text-gray-500">1. Download and install PuTTY</p>
-									<p class="text-gray-500">2. Use PuTTYgen to convert this key to .ppk format</p>
-									<p class="text-gray-500">3. Load the .ppk file in PuTTY's Connection > SSH > Auth section</p>
+									<p>1. <a href="https://www.putty.org/" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 underline">Download and install PuTTY</a></p>
+									<p>2. Use PuTTYgen to convert this key to .ppk format</p>
+									<p>3. Load the .ppk file in PuTTY's Connection > SSH > Auth section</p>
 								</div>
 							</div>
 						</div>

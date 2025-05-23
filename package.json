@@ -54,7 +54,16 @@
 		"@inlang/paraglide-js": "^2.0.0",
 		"@vercel/analytics": "^1.5.0",
 		"nodemailer": "^7.0.3",
-		"svelte-recaptcha-v2": "^0.0.2"
+		"svelte-recaptcha-v2": "^0.0.2",
+		"@rollup/rollup-linux-x64-gnu": "^4.0.0"
+	},
+	"optionalDependencies": {
+		"@rollup/rollup-darwin-arm64": "^4.0.0",
+		"@rollup/rollup-darwin-x64": "^4.0.0",
+		"@rollup/rollup-linux-arm64-gnu": "^4.0.0",
+		"@rollup/rollup-linux-x64-gnu": "^4.0.0",
+		"@rollup/rollup-win32-ia32-msvc": "^4.0.0",
+		"@rollup/rollup-win32-x64-msvc": "^4.0.0"
 	},
 	"description": "MemPhrase is a web-based tool designed to help you generate strong, memorable passphrases. Instead of complex, hard-to-remember passwords, MemPhrase creates phrases from a curated set of word categories, combining them with optional numbers and symbols for enhanced security.",
 	"main": "eslint.config.js",

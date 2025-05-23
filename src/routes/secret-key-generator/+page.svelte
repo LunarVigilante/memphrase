@@ -155,15 +155,15 @@
 
 <div class="container mx-auto max-w-2xl p-4 md:p-6 text-slate-200">
 	<div class="bg-slate-800 border border-slate-700 rounded-xl shadow-xl p-6 md:p-8">
-		<div class="prose prose-invert prose-sm md:prose-base max-w-none text-center mb-8">
-			<h1 class="text-3xl font-bold text-slate-100 mb-4">Secret Key Generator</h1>
+		<div class="prose prose-invert prose-sm md:prose-base max-w-none text-center mb-6">
+			<h1 class="text-3xl font-bold text-slate-100 mb-3">Secret Key Generator</h1>
 			<p class="text-lg text-slate-300">
 				Generate strong, random cryptographic keys for your applications, APIs, and services.
 			</p>
 		</div>
 
-		<div class="space-y-6 max-w-md mx-auto">
-			<!-- Key Purpose Section (NEW) -->
+		<div class="space-y-4 max-w-md mx-auto">
+			<!-- Key Purpose Section -->
 			<div>
 				<label for="keyPurpose" class="block text-sm font-medium text-slate-300 mb-2">Key Purpose</label>
 				<CustomTooltip text="Select your use case for optimal key settings" position="top">
@@ -181,34 +181,34 @@
 					</select>
 				</CustomTooltip>
 				{#if purposeRecommendations[keyPurpose]}
-					<p class="mt-1 text-xs text-slate-400">{purposeRecommendations[keyPurpose].description}</p>
+					<p class="mt-1.5 text-xs text-slate-400 leading-relaxed">{purposeRecommendations[keyPurpose].description}</p>
 				{/if}
 			</div>
 
-			<!-- Security Level Section (NEW) -->
+			<!-- Security Level Section -->
 			<fieldset>
-				<legend class="block text-sm font-medium text-slate-300 mb-2">Security Level</legend>
-				<div class="grid grid-cols-2 gap-3">
+				<legend class="block text-sm font-medium text-slate-300 mb-3">Security Level</legend>
+				<div class="grid grid-cols-2 gap-2.5">
 					<CustomTooltip text={securityLevels.standard.description} position="top">
-						<label class="flex items-center gap-x-2 cursor-pointer p-2 rounded-md hover:bg-slate-700 {securityLevel === 'standard' ? 'bg-green-600 text-white' : 'bg-slate-600 text-gray-300'} transition-colors">
+						<label class="flex items-center gap-x-2 cursor-pointer p-2.5 rounded-md hover:bg-slate-700 {securityLevel === 'standard' ? 'bg-green-600 text-white' : 'bg-slate-600 text-gray-300'} transition-colors">
 							<input type="radio" bind:group={securityLevel} name="securityLevel" value="standard" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
 							<span class="text-sm">Standard</span>
 						</label>
 					</CustomTooltip>
 					<CustomTooltip text={securityLevels.high.description} position="top">
-						<label class="flex items-center gap-x-2 cursor-pointer p-2 rounded-md hover:bg-slate-700 {securityLevel === 'high' ? 'bg-green-600 text-white' : 'bg-slate-600 text-gray-300'} transition-colors">
+						<label class="flex items-center gap-x-2 cursor-pointer p-2.5 rounded-md hover:bg-slate-700 {securityLevel === 'high' ? 'bg-green-600 text-white' : 'bg-slate-600 text-gray-300'} transition-colors">
 							<input type="radio" bind:group={securityLevel} name="securityLevel" value="high" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
 							<span class="text-sm">High</span>
 						</label>
 					</CustomTooltip>
 					<CustomTooltip text={securityLevels.maximum.description} position="top">
-						<label class="flex items-center gap-x-2 cursor-pointer p-2 rounded-md hover:bg-slate-700 {securityLevel === 'maximum' ? 'bg-green-600 text-white' : 'bg-slate-600 text-gray-300'} transition-colors">
+						<label class="flex items-center gap-x-2 cursor-pointer p-2.5 rounded-md hover:bg-slate-700 {securityLevel === 'maximum' ? 'bg-green-600 text-white' : 'bg-slate-600 text-gray-300'} transition-colors">
 							<input type="radio" bind:group={securityLevel} name="securityLevel" value="maximum" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
 							<span class="text-sm">Maximum</span>
 						</label>
 					</CustomTooltip>
 					<CustomTooltip text={securityLevels.custom.description} position="top">
-						<label class="flex items-center gap-x-2 cursor-pointer p-2 rounded-md hover:bg-slate-700 {securityLevel === 'custom' ? 'bg-green-600 text-white' : 'bg-slate-600 text-gray-300'} transition-colors">
+						<label class="flex items-center gap-x-2 cursor-pointer p-2.5 rounded-md hover:bg-slate-700 {securityLevel === 'custom' ? 'bg-green-600 text-white' : 'bg-slate-600 text-gray-300'} transition-colors">
 							<input type="radio" bind:group={securityLevel} name="securityLevel" value="custom" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
 							<span class="text-sm">Custom</span>
 						</label>
@@ -218,13 +218,13 @@
 
 			<!-- Key Length Section -->
 			<div>
-				<label for="keyLengthInput" class="block text-sm font-medium text-slate-300 mb-1">
+				<label for="keyLengthInput" class="block text-sm font-medium text-slate-300 mb-2">
 					Key Length
 					{#if securityLevel !== 'custom'}
-						<span class="text-xs text-green-400">(Auto-set by security level)</span>
+						<span class="text-xs text-green-400 ml-1">(Auto-set by security level)</span>
 					{/if}
 				</label>
-				<div class="flex items-center gap-x-3">
+				<div class="flex items-center gap-x-3 mb-2">
 					<input 
 						type="number" 
 						id="keyLengthInput" 
@@ -246,30 +246,30 @@
 						</label>
 					</div>
 				</div>
-				<div class="mt-1 text-xs text-slate-400 space-y-1">
-					<p>Current: {currentBytesForDisplay} bytes ({currentBitsForDisplay} bits)</p>
-					<p>Range: {MIN_BYTES}-{MAX_BYTES} bytes ({MIN_BYTES * 8}-{MAX_BYTES * 8} bits)</p>
+				<div class="text-xs text-slate-400 bg-slate-700/30 rounded p-2 space-y-0.5">
+					<p><span class="text-slate-300">Current:</span> {currentBytesForDisplay} bytes ({currentBitsForDisplay} bits)</p>
+					<p><span class="text-slate-300">Range:</span> {MIN_BYTES}-{MAX_BYTES} bytes ({MIN_BYTES * 8}-{MAX_BYTES * 8} bits)</p>
 				</div>
 			</div>
 
 			<!-- Encoding Format Section -->
 			<fieldset>
-				<legend class="block text-sm font-medium text-slate-300 mb-1">Encoding Format</legend>
-				<div class="flex flex-col sm:flex-row gap-3 sm:gap-x-4">
+				<legend class="block text-sm font-medium text-slate-300 mb-2">Encoding Format</legend>
+				<div class="flex flex-col sm:flex-row gap-2 sm:gap-x-4">
 					<CustomTooltip text="URL-safe encoding (no padding). Best for URLs and tokens." position="top">
-						<label class="flex items-center gap-x-1.5 cursor-pointer">
+						<label class="flex items-center gap-x-1.5 cursor-pointer p-1.5 sm:p-0">
 							<input type="radio" name="encodingFormatRadio" value="base64url" bind:group={encodingFormat} class="custom-radio focus:ring-green-500 focus:ring-offset-slate-800" />
 							<span class="text-sm text-slate-300">Base64URL</span>
 						</label>
 					</CustomTooltip>
 					<CustomTooltip text="Standard Base64 encoding. Common for APIs and config files." position="top">
-						<label class="flex items-center gap-x-1.5 cursor-pointer">
+						<label class="flex items-center gap-x-1.5 cursor-pointer p-1.5 sm:p-0">
 							<input type="radio" name="encodingFormatRadio" value="base64" bind:group={encodingFormat} class="custom-radio focus:ring-green-500 focus:ring-offset-slate-800" />
 							<span class="text-sm text-slate-300">Base64</span>
 						</label>
 					</CustomTooltip>
 					<CustomTooltip text="Hexadecimal encoding. Best for encryption keys and signatures." position="top">
-						<label class="flex items-center gap-x-1.5 cursor-pointer">
+						<label class="flex items-center gap-x-1.5 cursor-pointer p-1.5 sm:p-0">
 							<input type="radio" name="encodingFormatRadio" value="hex" bind:group={encodingFormat} class="custom-radio focus:ring-green-500 focus:ring-offset-slate-800" />
 							<span class="text-sm text-slate-300">Hexadecimal</span>
 						</label>
@@ -278,7 +278,7 @@
 			</fieldset>
 
 			<!-- Generate Button -->
-			<div class="pt-2">
+			<div class="pt-4">
 				<button 
 					type="button" 
 					on:click={generateAndDisplayKey}
@@ -294,8 +294,8 @@
 			{/if}
 
 			{#if generatedKey}
-				<div class="mt-6">
-					<label for="generatedKeyOutput" class="block text-sm font-medium text-slate-300 mb-1">Generated Key:</label>
+				<div class="pt-2">
+					<label for="generatedKeyOutput" class="block text-sm font-medium text-slate-300 mb-2">Generated Key:</label>
 					<div class="relative">
 						<textarea 
 							id="generatedKeyOutput" 
@@ -317,20 +317,20 @@
 					<p class="mt-2 text-xs text-slate-500 text-center">Keys are generated entirely in your browser and are not stored or transmitted.</p>
 				</div>
 			{/if}
-			
-			<!-- Additional Information (NEW) -->
-			<div class="mt-8 p-4 bg-slate-700/50 rounded-lg border border-slate-600">
-				<h3 class="text-sm font-semibold text-slate-200 mb-2">Security Information</h3>
-				<ul class="text-xs text-slate-400 space-y-1">
-					<li>• Keys are generated using Web Crypto API's secure random generator</li>
-					<li>• All generation happens locally in your browser</li>
-					<li>• No keys are stored or transmitted to any server</li>
-					<li>• For maximum security, generate new keys regularly</li>
-				</ul>
-			</div>
+		</div>
+		
+		<!-- Security Information Section -->
+		<div class="mt-8 max-w-md mx-auto p-4 bg-slate-700/30 rounded-lg border border-slate-600/50">
+			<h3 class="text-sm font-semibold text-slate-200 mb-2.5">Security Information</h3>
+			<ul class="text-xs text-slate-400 space-y-1.5 leading-relaxed">
+				<li>• Keys are generated using Web Crypto API's secure random generator</li>
+				<li>• All generation happens locally in your browser</li>
+				<li>• No keys are stored or transmitted to any server</li>
+				<li>• For maximum security, generate new keys regularly</li>
+			</ul>
 		</div>
 
-		<div class="mt-12 text-center">
+		<div class="mt-10 text-center">
 			<a href="/" class="text-green-400 hover:text-green-300 transition-colors">&#8592; Back to MemPhrase</a>
 		</div>
 	</div>
