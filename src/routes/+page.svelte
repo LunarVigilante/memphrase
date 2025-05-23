@@ -621,18 +621,13 @@
 </style>
 
 <main
-	class="container mx-auto mt-1 flex max-w-2xl flex-col items-center gap-8 p-4 md:mt-3 md:p-6"
+	class="container mx-auto mt-1 flex max-w-2xl flex-col items-center gap-4 p-4 md:mt-3 md:p-6"
 >
 	<!-- Skip Navigation Links -->
 	<div class="sr-only focus-within:not-sr-only">
 		<a href="#passphrase-display" class="skip-link bg-green-500 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400">Skip to passphrase</a>
 		<a href="#settings" class="skip-link bg-green-500 text-white px-4 py-2 rounded-md ml-2 focus:outline-none focus:ring-2 focus:ring-green-400">Skip to settings</a>
 	</div>
-
-	<!-- Privacy/Security Notice -->
-	<p class="text-xs text-slate-500 text-center">
-		{generationMode === 'words' ? 'Passphrases' : 'Passwords'} are generated entirely in your browser and are not stored or transmitted.
-	</p>
 
 	<div class="flex items-center justify-center">
 		<img src="/memphrase-logo.png" alt="MemPhrase Logo" class="h-12 w-12 md:h-16 md:w-16 mr-2" loading="lazy" />
@@ -872,7 +867,7 @@
 										aria-describedby="separator-help"
 									/>
 									<p id="separator-help" class="text-xs text-gray-500 mt-1 text-center max-w-20">
-										{separator ? `Between words: "${separator}"` : 'No separator (joined)'}
+										{separator ? `"${separator}"` : 'No separator'}
 									</p>
 								</div>
 							</CustomTooltip>
@@ -1078,6 +1073,13 @@
 		on:save={handleSymbolSave} 
 		on:close={() => showSymbolModal = false}
 	/>
+
+	<!-- Privacy/Security Notice -->
+	<div class="w-full text-center mt-8 mb-4">
+		<p class="text-xs text-slate-500">
+			{generationMode === 'words' ? 'Passphrases' : 'Passwords'} are generated entirely in your browser and are not stored or transmitted.
+		</p>
+	</div>
 
 	<footer class="w-full max-w-2xl mx-auto text-center py-8 mt-2 border-t border-slate-700">
 		<div class="flex flex-wrap justify-center gap-x-6 gap-y-2 mb-3">
