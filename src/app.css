@@ -11,3 +11,89 @@ html.dark body {
 /* body {
   @apply bg-white text-gray-900;
 } */
+
+/* Custom Radio Button Styling (basic, can be enhanced like checkboxes) */
+.custom-radio {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 1.25rem; /* w-5 */
+	height: 1.25rem; /* h-5 */
+	border-radius: 50%; /* circular */
+	border: 1px solid #6B7280; /* border-gray-500 */
+	background-color: #374151; /* bg-gray-700 */
+	display: inline-block;
+	vertical-align: middle;
+	position: relative;
+	cursor: pointer;
+}
+
+.custom-radio:checked {
+	border-color: #22C55E; /* border-green-500 */
+	background-color: #374151; /* Keep same bg or change if desired */
+}
+
+/* Inner circle for checked state */
+.custom-radio:checked::after {
+	content: '';
+	display: block;
+	width: 0.65rem; /* Smaller inner circle */
+	height: 0.65rem;
+	border-radius: 50%;
+	background-color: #22C55E; /* green-500 */
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.custom-radio:focus {
+	outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--tw-ring-offset-color, transparent), 0 0 0 calc(2px + 2px) var(--tw-ring-color, transparent), var(--tw-shadow, 0 0 #0000);
+}
+.custom-radio:focus {
+	--tw-ring-color: #22C55E;
+	--tw-ring-offset-color: #1E293B; /* dark:focus:ring-offset-slate-800 */
+}
+
+/* Skip Navigation Links */
+.skip-link {
+	position: absolute;
+	top: -40px;
+	left: 6px;
+	background: #22C55E;
+	color: white;
+	padding: 8px 16px;
+	border-radius: 4px;
+	text-decoration: none;
+	z-index: 9999;
+	transition: top 0.3s;
+}
+
+.skip-link:focus {
+	top: 6px;
+}
+
+/* Screen reader only class */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.focus-within\:not-sr-only:focus-within {
+	position: static;
+	width: auto;
+	height: auto;
+	padding: 0;
+	margin: 0;
+	overflow: visible;
+	clip: auto;
+	white-space: normal;
+}

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, afterUpdate } from 'svelte';
+	import { onMount, afterUpdate, beforeUpdate } from 'svelte';
 	import { fade, slide } from 'svelte/transition'; // Added slide transition
 	import CustomTooltip from '$lib/components/CustomTooltip.svelte'; // Import the new component
 	import {
@@ -7,10 +7,13 @@
 		type PassphraseOptions,
 		calculatePassphraseStrength,
 		type PassphraseStrengthResult,
-		DEFAULT_PASSPHRASE_SYMBOLS // Import default symbols
+		DEFAULT_PASSPHRASE_SYMBOLS, // Import default symbols
+		describeWordPattern // Import the new pattern description function
 	} from '../lib/passwordUtils';
 	import { categories as wordListCategories, defaultCategories as defaultLeafCategories, getCategoryByName, type WordCategory } from '$lib/words'; // Import categories
 	import SymbolSelectorModal from '$lib/components/SymbolSelectorModal.svelte'; // Import the modal
+	import PasswordStrengthMeter from '$lib/components/PasswordStrengthMeter.svelte';
+	import RadioGroup from '$lib/components/RadioGroup.svelte';
 
 	interface MemPhraseSettings {
 		numWords: number;
@@ -51,8 +54,16 @@
 	let autoCopy = false;
 	let charGrouping: 'together' | 'separate' = 'together';
 
+	// Generation mode reactive variable
+	let generationMode: 'words' | 'randomChars' = 'words'; // Default to word-based
+
+	// Define generation mode options
+	const generationModeOptions = [
+		{ value: 'words', label: 'Word-based (Memorable)' },
+		{ value: 'randomChars', label: 'Random Characters (Strong)' }
+	];
+
 	// New state for generation mode
-	let generationMode: 'words' | 'randomChars' = 'words';
 	let randomPasswordLength = 16;
 	let randomIncludeLowercase = true;
 	let randomIncludeUppercase = true;
@@ -411,11 +422,21 @@
 		// or if we manually call generatePassphrase() - already happens due to settingsSignature change
 	}
 
+	// Validation functions
+	function validateSeparator(value: string): string {
+		// Allow up to 3 characters, no control characters
+		const cleaned = value.replace(/[\x00-\x1F\x7F]/g, '').slice(0, 3);
+		return cleaned;
+	}
+
+	// Reactive statements for validation
+	$: separator = validateSeparator(separator || '');
+
 </script>
 
 <svelte:head>
-	<title>MemPhrase - Memorable Passphrase Generator</title>
-	<meta name="description" content="A simple memorable passphrase generator - MemPhrase" />
+	<title>MemPhrase - Free Passphrase Generator</title>
+	<meta name="description" content="Generate strong, memorable passphrases with MemPhrase. Create secure passwords using word combinations, random characters, and customizable settings. Free, private, and runs entirely in your browser." />
 </svelte:head>
 
 <style>
@@ -512,56 +533,20 @@
 		--tw-ring-offset-color: #1E293B; /* dark:focus:ring-offset-slate-800 */
 	}
 
-	/* Custom Radio Button Styling (basic, can be enhanced like checkboxes) */
-	.custom-radio {
-		appearance: none;
-		-webkit-appearance: none;
-		width: 1.25rem; /* w-5 */
-		height: 1.25rem; /* h-5 */
-		border-radius: 50%; /* circular */
-		border: 1px solid #6B7280; /* border-gray-500 */
-		background-color: #374151; /* bg-gray-700 */
-		display: inline-block;
-		vertical-align: middle;
-		position: relative;
-		cursor: pointer;
-	}
-
-	.custom-radio:checked {
-		border-color: #22C55E; /* border-green-500 */
-		background-color: #374151; /* Keep same bg or change if desired */
-	}
-
-	/* Inner circle for checked state */
-	.custom-radio:checked::after {
-		content: '';
-		display: block;
-		width: 0.65rem; /* Smaller inner circle */
-		height: 0.65rem;
-		border-radius: 50%;
-		background-color: #22C55E; /* green-500 */
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-	}
-
-	.custom-radio:focus {
-		outline: 2px solid transparent;
-    	outline-offset: 2px;
-    	box-shadow: 0 0 0 2px var(--tw-ring-offset-color, transparent), 0 0 0 calc(2px + 2px) var(--tw-ring-color, transparent), var(--tw-shadow, 0 0 #0000);
-	}
-	.custom-radio:focus {
-		--tw-ring-color: #22C55E;
-		--tw-ring-offset-color: #1E293B; /* dark:focus:ring-offset-slate-800 */
-	}
+	/* Custom Radio Button Styling REMOVED from here */
 </style>
 
 <main
 	class="container mx-auto mt-1 flex max-w-2xl flex-col items-center gap-8 p-4 md:mt-3 md:p-6"
 >
+	<!-- Skip Navigation Links -->
+	<div class="sr-only focus-within:not-sr-only">
+		<a href="#passphrase-display" class="skip-link bg-green-500 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400">Skip to passphrase</a>
+		<a href="#settings" class="skip-link bg-green-500 text-white px-4 py-2 rounded-md ml-2 focus:outline-none focus:ring-2 focus:ring-green-400">Skip to settings</a>
+	</div>
+
 	<div class="flex items-center justify-center">
-		<img src="/memphrase-logo.png" alt="MemPhrase Logo" class="h-12 w-12 md:h-16 md:w-16 mr-2" />
+		<img src="/memphrase-logo.png" alt="MemPhrase Logo" class="h-12 w-12 md:h-16 md:w-16 mr-2" loading="lazy" />
 		<h1 class="text-center text-4xl font-bold text-gray-100 md:text-5xl [text-shadow:_2px_2px_5px_rgb(0_0_0_/_0.6)]">
 			MemPhrase
 		</h1>
@@ -569,11 +554,14 @@
 
 	<!-- Passphrase Display (MOVED Password Type below this) -->
 	<section
+		id="passphrase-display"
 		class="relative flex h-16 w-full items-center gap-3 rounded-lg bg-slate-700 p-4 shadow-lg transition-colors duration-200 {noCategoriesSelectedError ? 'border-red-500' : 'border-green-500'}"
 	>
 		<span class="flex-grow truncate font-mono text-xl {noCategoriesSelectedError ? 'text-red-400' : 'text-gray-50'}"
 				role="status" 
 				aria-live="polite"
+				aria-atomic="true"
+				aria-label={noCategoriesSelectedError ? 'Error: Please select at least one word category' : `Generated passphrase: ${passphrase}`}
 				on:mouseenter={handleMouseEnterPassphrase}
 				on:mouseleave={handleMouseLeavePassphrase}
 				aria-describedby={showCustomTooltip ? "custom-passphrase-tooltip" : undefined}
@@ -627,35 +615,26 @@
 	</section>
 
 	<!-- Passphrase Strength Indicator -->
-	{#if passphraseStrength}
-		<div class="w-full">
-			<div class="flex justify-center items-baseline text-center">
-				<span class="text-sm font-medium text-gray-300 mr-1">Strength:</span>
-				<span class={`font-semibold mr-1 ${noCategoriesSelectedError ? 'text-red-400' : passphraseStrength.colorClass}`}>
-					{passphraseStrength.label}
-				</span>
-				{#if !noCategoriesSelectedError && passphraseStrength.entropy > 0}
-					<CustomTooltip
-						text={`Entropy (bits): Measures unpredictability. Higher is better.`}
-						position="top"
-					>
-						<span role="status" class="text-xs text-gray-500 italic">({passphraseStrength.entropy.toFixed(1)} bits)</span>
-					</CustomTooltip>
-				{/if}
-			</div>
-			<div class="mt-1 h-2 w-full rounded-full bg-slate-700 overflow-hidden">
-				<div
-					class={`strength-bar-fill h-full rounded-full transition-all duration-300 ease-in-out ${noCategoriesSelectedError ? 'bg-red-500' : (passphraseStrength.colorClass ? passphraseStrength.colorClass.replace('text-', 'bg-') : 'bg-gray-500')}`}
-					style={`width: ${noCategoriesSelectedError ? '100%' : (((passphraseStrength.score || 0) / 4) * 100)}%`}
-				></div>
-			</div>
+	<PasswordStrengthMeter strength={passphraseStrength} hasError={noCategoriesSelectedError} />
+
+	{#if generationMode === 'words' && !noCategoriesSelectedError && numWords > 0}
+		<div class="text-center -mt-4 mb-0">
+			<CustomTooltip text="MemPhrase uses word patterns to make passphrases more memorable while maintaining security." position="top">
+				<p class="text-xs text-slate-400 italic">
+					Pattern: {describeWordPattern(numWords, selectedCategories)}
+				</p>
+			</CustomTooltip>
 		</div>
 	{/if}
+
+	<p class="text-xs text-slate-500 text-center {generationMode === 'words' && !noCategoriesSelectedError && numWords > 0 ? '-mt-4' : ''}">
+		{generationMode === 'words' ? 'Passphrases' : 'Passwords'} are generated entirely in your browser and are not stored or transmitted.
+	</p>
 
 	<!-- Generate Button -->
 	<button
 		on:click={generatePassphrase}
-		class="button-gleam w-full rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-3.5 text-xl font-semibold text-white shadow-md transition-all duration-150 ease-in-out hover:from-green-600 hover:to-emerald-700 active:bg-emerald-700 active:scale-95 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800 mt-2"
+		class="button-gleam w-full rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-3.5 text-xl font-semibold text-white shadow-md transition-all duration-150 ease-in-out hover:from-green-600 hover:to-emerald-700 active:bg-emerald-700 active:scale-95 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800"
 		disabled={
 			(generationMode === 'words' && selectedCategories.length === 0) || 
 			(generationMode === 'randomChars' && !randomIncludeLowercase && !randomIncludeUppercase && !randomIncludeNumbers && !randomIncludeSymbols)
@@ -666,19 +645,16 @@
 
 	<!-- Passphrase Settings Card -->
 	<section
+		id="settings"
 		class="w-full rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-2xl transition-colors duration-200 mt-4"
 	>
 		<!-- Generation Mode Selection (MOVED INSIDE CARD, NO HEADER) -->
-		<div class="flex justify-center gap-4 mb-6">
-			<label class="flex items-center gap-x-2 cursor-pointer p-2 rounded-md hover:bg-slate-700 {generationMode === 'words' ? 'bg-green-600 text-white radio-label-gleam' : 'bg-slate-600 text-gray-300'} transition-colors">
-				<input type="radio" bind:group={generationMode} name="generationMode" value="words" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
-				<span>Word-based (Memorable)</span>
-			</label>
-			<label class="flex items-center gap-x-2 cursor-pointer p-2 rounded-md hover:bg-slate-700 {generationMode === 'randomChars' ? 'bg-green-600 text-white radio-label-gleam' : 'bg-slate-600 text-gray-300'} transition-colors">
-				<input type="radio" bind:group={generationMode} name="generationMode" value="randomChars" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
-				<span>Random Characters (Strong)</span>
-			</label>
-		</div>
+		<RadioGroup 
+			options={generationModeOptions}
+			name="generationMode"
+			bind:selected={generationMode}
+			className="justify-center mb-6"
+		/>
 
 		{#if generationMode === 'words'}
 			<!-- WORD-BASED OPTIONS (Existing Layout) -->
@@ -797,8 +773,11 @@
 										type="text" 
 										id="separator" 
 										bind:value={separator}
+										maxlength="3"
 										class="block w-20 rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500 text-center"
+										aria-describedby="separator-help"
 									/>
+									<p id="separator-help" class="text-xs text-gray-500 mt-1 text-center">Max 3 characters</p>
 								</div>
 							</CustomTooltip>
 						</div>
@@ -840,7 +819,7 @@
 											<input type="number" id="numSymbolsWordInput" bind:value={numSymbols} min="0" max="5" class="block w-20 rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500" />
 											{#if numSymbolsForWordMode > 0}
 												<CustomTooltip text="Customize which symbols are used for word-based passphrases." position="right">
-													<button type="button" on:click={() => openSymbolModal('words')} class="cursor-pointer ml-3 p-1 text-xl text-slate-400 hover:text-slate-100 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800 rounded-md flex items-center justify-center transition-all duration-150 ease-in-out" title="Customize Symbols">
+													<button type="button" on:click={() => openSymbolModal('words')} class="cursor-pointer ml-3 p-1 text-xl text-slate-400 hover:text-slate-100 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800 rounded-md flex items-center justify-center transition-all duration-150 ease-in-out" aria-label="Customize symbols for word-based passphrases" title="Customize Symbols">
 														⚙️
 													</button>
 												</CustomTooltip>
@@ -851,8 +830,8 @@
 
 								{#if numDigitsForWordMode > 0 || numSymbolsForWordMode > 0}
 									<CustomTooltip text="Where to place the numbers and/or symbols relative to the words." position="top">
-										<div class="mt-4">
-											<label class="block text-sm font-medium text-gray-300 mb-1">Number/Symbol Position</label>
+										<fieldset class="mt-4">
+											<legend class="block text-sm font-medium text-gray-300 mb-1">Number/Symbol Position</legend>
 											<!-- Radio buttons for numSymPosition -->
 											<div class="flex flex-col gap-2 pl-2">
 												<CustomTooltip text="Add numbers/symbols at the end of the passphrase." position="bottom">
@@ -874,12 +853,12 @@
 													</label>
 												</CustomTooltip>
 											</div>
-										</div>
+										</fieldset>
 									</CustomTooltip>
 
 									<CustomTooltip text="How numbers and symbols are grouped if both are included." position="top">
-										<div class="mt-4">
-											<label class="block text-sm font-medium text-gray-300 mb-1">Symbol/Number Grouping</label>
+										<fieldset class="mt-4">
+											<legend class="block text-sm font-medium text-gray-300 mb-1">Symbol/Number Grouping</legend>
 											<!-- Radio buttons for charGrouping -->
 											<div class="flex flex-col gap-2 pl-2">
 												<CustomTooltip text="Numbers and symbols are combined into a single block (e.g., 123#$%)" position="bottom">
@@ -895,7 +874,7 @@
 													</label>
 												</CustomTooltip>
 											</div>
-										</div>
+										</fieldset>
 									</CustomTooltip>
 								{/if}
 							</div>
@@ -965,7 +944,7 @@
 								{#if randomIncludeSymbols}
 									<div class="flex items-center mt-1 pl-8"> 
 										<CustomTooltip text="Customize which symbols are used for random passwords." position="right">
-											<button type="button" on:click={() => openSymbolModal('randomChars')} class="cursor-pointer p-1 text-xl text-slate-400 hover:text-slate-100 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800 rounded-md flex items-center justify-center transition-all duration-150 ease-in-out" title="Customize Symbols">
+											<button type="button" on:click={() => openSymbolModal('randomChars')} class="cursor-pointer p-1 text-xl text-slate-400 hover:text-slate-100 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800 rounded-md flex items-center justify-center transition-all duration-150 ease-in-out" aria-label="Customize symbols for random passwords" title="Customize Symbols">
 												⚙️
 											</button>
 										</CustomTooltip>
@@ -1010,9 +989,19 @@
 			<a href="/privacy" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Privacy Policy</a>
 			<a href="/contact" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Contact Us</a>
 			<a href="/password-guide" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Password Guide</a>
+			<a href="/secret-key-generator" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Key Generator</a>
 			<a href="/donate" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Support Us</a>
-			<a href="https://github.com/LunarVigilante/memphrase" target="_blank" rel="noopener noreferrer" class="text-xs text-slate-400 hover:text-slate-200 transition-colors">Source Code (GitHub)</a>
 		</div>
+
+		<div class="my-4 flex justify-center">
+			<a href="https://github.com/LunarVigilante/memphrase" target="_blank" rel="noopener noreferrer" aria-label="MemPhrase Source Code on GitHub" class="text-slate-400 hover:text-slate-200 transition-colors">
+				<svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="w-6 h-6">
+				  <title>GitHub</title>
+				  <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.236 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+				</svg>
+			</a>
+		</div>
+
 		<p class="text-xs text-slate-500">
 			&copy; {currentYear} MemPhrase. All rights reserved.
 		</p>
