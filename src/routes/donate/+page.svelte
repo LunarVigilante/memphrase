@@ -93,7 +93,7 @@
 					<h3 class="text-xl font-semibold text-slate-100 mb-3">{selectedCrypto.name} ({selectedCrypto.symbol})</h3>
 					<div class="w-72 h-72 bg-white p-2 rounded-md flex items-center justify-center mb-4">
 						<!-- IMPORTANT: Replace with your actual QR code images -->
-						<img src={selectedCrypto.qrImagePath} alt="{selectedCrypto.name} QR Code" class="max-w-full max-h-full object-contain" />
+						<img src={selectedCrypto.qrImagePath} alt="{selectedCrypto.name} QR Code" class="max-w-full max-h-full object-contain" loading="lazy" />
 					</div>
 					<p class="text-sm text-slate-400 mb-1">Address:</p>
 					<div class="flex items-center justify-between w-full max-w-lg bg-slate-700 p-2 rounded-md mb-3">

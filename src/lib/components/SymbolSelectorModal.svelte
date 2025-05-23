@@ -49,9 +49,24 @@
 <svelte:window on:keydown={handleKeydown}/>
 
 {#if isOpen}
-	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" on:click={closeModal}>
-		<div class="bg-slate-800 p-6 rounded-lg shadow-xl max-w-md w-full m-4 text-slate-200 border border-slate-700" on:click|stopPropagation>
-			<h2 class="text-xl font-semibold mb-4 text-slate-100">Select Symbols</h2>
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div 
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" 
+		on:click={closeModal}
+		on:keydown={(e) => {if (e.key === 'Enter' || e.key === ' ') closeModal()}}
+		aria-label="Close modal backdrop"
+	>
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
+		<div 
+			class="bg-slate-800 p-6 rounded-lg shadow-xl max-w-md w-full m-4 text-slate-200 border border-slate-700" 
+			on:click|stopPropagation
+			on:keydown|stopPropagation
+			role="dialog"
+			aria-labelledby="modal-title"
+			aria-modal="true"
+			tabindex="0"
+		>
+			<h2 id="modal-title" class="text-xl font-semibold mb-4 text-slate-100">Select Symbols</h2>
 			
 			<div class="grid grid-cols-6 sm:grid-cols-8 gap-2 mb-4 max-h-60 overflow-y-auto p-2 bg-slate-700/50 rounded-md border border-slate-600">
 				{#each availableSymbols.split('') as symbol (symbol)}
