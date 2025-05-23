@@ -1,9 +1,8 @@
-import { mdsvex } from 'mdsvex';
 import adapter from '@sveltejs/adapter-vercel';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 const config = {
-	preprocess: [vitePreprocess(), mdsvex()],
+	preprocess: [vitePreprocess()],
 	kit: {
 		adapter: adapter({
 			// See https://kit.svelte.dev/docs/adapter-vercel for more information
@@ -12,7 +11,7 @@ const config = {
 			runtime: 'nodejs18.x' // Or your desired Node.js runtime for Vercel serverless functions
 		})
 	},
-	extensions: ['.svelte', '.svx']
+	extensions: ['.svelte']
 };
 
 export default config;
