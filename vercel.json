@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm ci && npm run build",
-  "installCommand": "npm ci --omit=optional",
+  "buildCommand": "npm install && npm run build",
+  "installCommand": "npm install --omit=optional --no-audit --no-fund",
   "framework": "sveltekit"
 } 
