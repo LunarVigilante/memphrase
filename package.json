@@ -17,8 +17,7 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
 		"format": "prettier --write .",
-		"test:e2e": "playwright test",
-		"postinstall": "npm rebuild --if-present"
+		"test:e2e": "playwright test"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
