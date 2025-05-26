@@ -82,23 +82,21 @@
 		{/if}
 		
 		<!-- Consolidated strength display -->
-		<div class="flex items-center justify-between">
-			<div class="flex items-center gap-2">
-				<span class="text-lg" aria-hidden="true">{getStatusIcon(strength.score)}</span>
-				<span class={`font-semibold transition-colors duration-500 ${hasError ? 'text-red-400' : strength.colorClass} ${pulseAnimation ? 'animate-pulse' : ''}`}>
-					{strength.label}
-				</span>
-				{#if !hasError && strength.entropy > 0}
-					<CustomTooltip
-						text="Entropy (bits): Measures unpredictability. Higher is better. This represents the computational difficulty of guessing your password."
-						position="top"
-					>
-						<span class="text-xs text-gray-500 cursor-help bg-gray-700 px-2 py-1 rounded">
-							{strength.entropy} bits
-						</span>
-					</CustomTooltip>
-				{/if}
-			</div>
+		<div class="flex justify-center items-baseline text-center">
+			<span class="text-lg mr-1" aria-hidden="true">{getStatusIcon(strength.score)}</span>
+			<span class={`font-semibold mr-1 transition-colors duration-500 ${hasError ? 'text-red-400' : strength.colorClass} ${pulseAnimation ? 'animate-pulse' : ''}`}>
+				{strength.label}
+			</span>
+			{#if !hasError && strength.entropy > 0}
+				<CustomTooltip
+					text="Entropy (bits): Measures unpredictability. Higher is better. This represents the computational difficulty of guessing your password."
+					position="top"
+				>
+					<span class="text-xs text-gray-500 cursor-help bg-gray-700 px-2 py-1 rounded">
+						({strength.entropy} bits)
+					</span>
+				</CustomTooltip>
+			{/if}
 		</div>
 		
 		<!-- Animated progress bar with better visual hierarchy -->
