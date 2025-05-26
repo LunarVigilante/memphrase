@@ -52,7 +52,7 @@
   // but for dynamic absolute positioning, style attribute is sometimes necessary.
   $: tooltipClasses = (() => {
     // Added shadow-xl to the base classes
-    let base = "absolute z-50 px-3 py-2 text-xs font-medium text-gray-200 bg-slate-800 rounded-lg shadow-xl whitespace-normal break-words min-w-[100px] max-w-[250px] text-center transition-opacity duration-200";
+    let base = "absolute z-50 px-3 py-2 text-xs font-medium text-gray-200 bg-slate-800 rounded-lg shadow-xl whitespace-normal break-words min-w-[120px] max-w-[500px] text-center transition-opacity duration-200";
     // For more complex positioning, JS is needed after mount to get element dimensions.
     // This basic example will rely on transform for centering.
     if (position === 'top') return `${base} bottom-full left-1/2 -translate-x-1/2 mb-2`;
