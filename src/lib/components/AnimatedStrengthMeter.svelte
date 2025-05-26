@@ -82,9 +82,9 @@
 		{/if}
 		
 		<!-- Consolidated strength display -->
-		<div class="flex justify-center items-baseline text-center">
-			<span class="text-lg mr-1" aria-hidden="true">{getStatusIcon(strength.score)}</span>
-			<span class={`font-semibold mr-1 transition-colors duration-500 ${hasError ? 'text-red-400' : strength.colorClass} ${pulseAnimation ? 'animate-pulse' : ''}`}>
+		<div class="flex justify-center items-baseline text-center gap-2">
+			<span class="text-lg" aria-hidden="true">{getStatusIcon(strength.score)}</span>
+			<span class={`font-semibold mx-3 transition-colors duration-500 ${hasError ? 'text-red-400' : strength.colorClass} ${pulseAnimation ? 'animate-pulse' : ''}`}>
 				{strength.label}
 			</span>
 			{#if !hasError && strength.entropy > 0}
