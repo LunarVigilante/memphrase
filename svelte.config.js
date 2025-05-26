@@ -6,7 +6,7 @@ const config = {
 	kit: {
 		adapter: adapter({
 			// Use Node.js runtime for nodemailer compatibility
-			runtime: 'nodejs18.x'
+			// Using default Node.js 22.x (latest LTS)
 		})
 	},
 	extensions: ['.svelte']
