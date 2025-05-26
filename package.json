@@ -32,12 +32,15 @@
 		"@tailwindcss/vite": "^4.0.0",
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/svelte": "^5.2.4",
+		"@types/node": "^22.15.21",
 		"@types/nodemailer": "^6.4.17",
+		"autoprefixer": "^10.4.21",
 		"eslint": "^9.18.0",
 		"eslint-config-prettier": "^10.0.1",
 		"eslint-plugin-svelte": "^3.0.0",
 		"globals": "^16.0.0",
 		"jsdom": "^26.0.0",
+		"postcss": "^8.5.3",
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.3",
 		"qrcode": "^1.5.4",
@@ -53,8 +56,7 @@
 		"@inlang/paraglide-js": "^2.0.0",
 		"@vercel/analytics": "^1.5.0",
 		"nodemailer": "^7.0.3",
-		"svelte-recaptcha-v2": "^0.0.2",
-		"@rollup/rollup-linux-x64-gnu": "^4.0.0"
+		"svelte-recaptcha-v2": "^0.0.2"
 	},
 	"optionalDependencies": {
 		"@rollup/rollup-darwin-arm64": "^4.0.0",
