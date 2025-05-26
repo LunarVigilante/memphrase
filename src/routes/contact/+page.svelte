@@ -3,6 +3,7 @@
 	import { PUBLIC_RECAPTCHA_V2_SITE_KEY } from '$env/static/public';
 	import { browser } from '$app/environment'; 
 	import { onMount } from 'svelte';
+	import Footer from '$lib/components/Footer.svelte';
 
 	let formStatusMessage = '';
 	let formStatusIsError = false;
@@ -145,7 +146,7 @@
 	<meta name="description" content="Contact MemPhrase" />
 </svelte:head>
 
-<div class="container mx-auto max-w-xl p-4 md:p-6 text-slate-200">
+<div class="container mx-auto max-w-2xl p-4 md:p-6 text-slate-200">
 	<h1 class="text-3xl font-bold text-slate-100 mb-6 text-center">Contact Us</h1>
 
 	<p class="text-center text-slate-300 mb-8">
@@ -192,12 +193,10 @@
 				{formStatusMessage}
 			</p>
 		{/if}
-
-		<div class="mt-12 text-center">
-			<a href="/" class="text-green-400 hover:text-green-300 transition-colors">&#8592; Back to MemPhrase</a>
-		</div>
 	</div>
 </div>
+
+<Footer />
 
 <style>
 	/* Minimal specific styles, relying on Tailwind mostly */

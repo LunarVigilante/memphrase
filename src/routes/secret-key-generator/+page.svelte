@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { browser } from '$app/environment';
 	import CustomTooltip from '$lib/components/CustomTooltip.svelte'; // Assuming you might want tooltips
+	import Footer from '$lib/components/Footer.svelte';
 
 	let keyLengthInput = 32;
 	let lengthUnit: 'bytes' | 'bits' = 'bytes';
@@ -329,12 +330,10 @@
 				<li>• For maximum security, generate new keys regularly</li>
 			</ul>
 		</div>
-
-		<div class="mt-10 text-center">
-			<a href="/" class="text-green-400 hover:text-green-300 transition-colors">&#8592; Back to MemPhrase</a>
-		</div>
 	</div>
 </div>
+
+<Footer />
 
 <style>
 	/* Styles for this page - custom-radio should now be global from app.css */

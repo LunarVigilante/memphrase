@@ -1,6 +1,7 @@
 <script lang="ts">
 	// No specific Svelte lifecycle functions needed for this static-like page yet.
 	// currentYear is already on the main page, not directly needed here unless repeating copyright.
+	import Footer from '$lib/components/Footer.svelte';
 
 	interface CryptoCurrency {
 		name: string;
@@ -109,11 +110,10 @@
 				Thank you for your support!
 			</p>
 		</div>
-		<div class="mt-12 text-center">
-			<a href="/" class="text-green-400 hover:text-green-300 transition-colors">&#8592; Back to MemPhrase</a>
-		</div>
 	</div>
 </div>
+
+<Footer />
 
 <style>
 	/* Basic styling for prose content if not using Tailwind Typography plugin */

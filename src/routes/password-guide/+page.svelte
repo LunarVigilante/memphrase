@@ -1,9 +1,13 @@
+<script>
+	import Footer from '$lib/components/Footer.svelte';
+</script>
+
 <svelte:head>
 	<title>Password Guide - Understanding Security & MemPhrase - MemPhrase</title>
 	<meta name="description" content="Learn about password strength, entropy, how MemPhrase generates passwords, general security tips, and password managers." />
 </svelte:head>
 
-<div class="container mx-auto max-w-3xl p-4 md:p-6 text-slate-200">
+<div class="container mx-auto max-w-2xl p-4 md:p-6 text-slate-200">
 	<div class="bg-slate-800 border border-slate-700 rounded-xl shadow-xl p-6 md:p-8">
 		<div class="prose prose-invert prose-sm md:prose-base max-w-none">
 			<h1 class="text-3xl font-bold text-slate-100 mb-6 text-center">Password Security & MemPhrase</h1>
@@ -95,11 +99,10 @@
 				<em>Disclaimer: The listing of these password managers is for informational purposes only and does not constitute an endorsement by MemPhrase. Please conduct your own research before choosing any security product.</em>
 			</p>
 		</div>
-		<div class="mt-10 text-center">
-			<a href="/" class="text-green-400 hover:text-green-300 transition-colors">&#8592; Back to MemPhrase</a>
-		</div>
 	</div>
 </div>
+
+<Footer />
 
 <style>
 	/* Basic styling for prose content */
