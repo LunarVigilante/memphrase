@@ -4,6 +4,30 @@
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/memphrase-logo.png" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		
+		<!-- PWA Meta Tags -->
+		<link rel="manifest" href="%sveltekit.assets%/manifest.json" />
+		<meta name="theme-color" content="#10b981" />
+		<meta name="background-color" content="#111827" />
+		<meta name="display" content="standalone" />
+		<meta name="orientation" content="portrait-primary" />
+		
+		<!-- iOS Specific PWA Meta Tags -->
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+		<meta name="apple-mobile-web-app-title" content="MemPhrase" />
+		<link rel="apple-touch-icon" href="%sveltekit.assets%/memphrase-logo.png" />
+		<link rel="apple-touch-startup-image" href="%sveltekit.assets%/memphrase-logo.png" />
+		
+		<!-- Windows/Edge Specific PWA Meta Tags -->
+		<meta name="msapplication-TileColor" content="#111827" />
+		<meta name="msapplication-TileImage" content="%sveltekit.assets%/memphrase-logo.png" />
+		<meta name="msapplication-config" content="none" />
+		
+		<!-- Security and Privacy -->
+		<meta name="referrer" content="strict-origin-when-cross-origin" />
+		<meta name="robots" content="index, follow" />
+		
 		%sveltekit.head%
 		<style>
 			body {

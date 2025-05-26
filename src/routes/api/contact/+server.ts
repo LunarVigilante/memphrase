@@ -1,14 +1,15 @@
 import type { RequestHandler } from './$types';
 import nodemailer from 'nodemailer';
-import {
-    SMTP_HOST,
-    SMTP_PORT,
-    SMTP_USER,
-    SMTP_PASS,
-    EMAIL_TO_ADDRESS,
-    EMAIL_FROM_ADDRESS,
-    RECAPTCHA_V2_SECRET_KEY
-} from '$env/static/private';
+import { env } from '$env/dynamic/private';
+
+// Environment variables with fallbacks for build compatibility
+const SMTP_HOST = env.SMTP_HOST;
+const SMTP_PORT = env.SMTP_PORT;
+const SMTP_USER = env.SMTP_USER;
+const SMTP_PASS = env.SMTP_PASS;
+const EMAIL_TO_ADDRESS = env.EMAIL_TO_ADDRESS;
+const EMAIL_FROM_ADDRESS = env.EMAIL_FROM_ADDRESS;
+const RECAPTCHA_V2_SECRET_KEY = env.RECAPTCHA_V2_SECRET_KEY;
 
 // Basic email validation regex (not exhaustive, but good for most cases)
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

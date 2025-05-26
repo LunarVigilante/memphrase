@@ -152,21 +152,21 @@ ${generateRandomBase64(96)}
 		
 		<!-- Key Type Selection -->
 		<div class="space-y-6">
-			<div>
-				<label class="block text-sm font-medium text-gray-300 mb-3">Key Type</label>
+			<fieldset>
+				<legend class="block text-sm font-medium text-gray-300 mb-3">Key Type</legend>
 				<RadioGroup 
 					options={keyTypeOptions}
 					name="keyType"
 					bind:selected={keyType}
 					className="grid grid-cols-1 md:grid-cols-3 gap-4"
 				/>
-			</div>
+			</fieldset>
 
 			<!-- RSA Key Size (only show for RSA) -->
 			{#if keyType === 'rsa'}
-				<div>
+				<fieldset>
 					<CustomTooltip text="Larger key sizes provide better security but take longer to generate and use more CPU." position="top">
-						<label class="block text-sm font-medium text-gray-300 mb-3">RSA Key Size</label>
+						<legend class="block text-sm font-medium text-gray-300 mb-3">RSA Key Size</legend>
 					</CustomTooltip>
 					<RadioGroup 
 						options={rsaKeySizeOptions}
@@ -174,14 +174,14 @@ ${generateRandomBase64(96)}
 						bind:selected={rsaKeySize}
 						className="grid grid-cols-3 gap-4"
 					/>
-				</div>
+				</fieldset>
 			{/if}
 
 			<!-- ECDSA Curve (only show for ECDSA) -->
 			{#if keyType === 'ecdsa'}
-				<div>
+				<fieldset>
 					<CustomTooltip text="Different elliptic curves provide different security levels. P-256 is most widely supported." position="top">
-						<label class="block text-sm font-medium text-gray-300 mb-3">ECDSA Curve</label>
+						<legend class="block text-sm font-medium text-gray-300 mb-3">ECDSA Curve</legend>
 					</CustomTooltip>
 					<RadioGroup 
 						options={ecdsaCurveOptions}
@@ -189,7 +189,7 @@ ${generateRandomBase64(96)}
 						bind:selected={ecdsaCurve}
 						className="grid grid-cols-3 gap-4"
 					/>
-				</div>
+				</fieldset>
 			{/if}
 
 			<!-- Comment Field -->

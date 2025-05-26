@@ -64,7 +64,7 @@
 			role="dialog"
 			aria-labelledby="modal-title"
 			aria-modal="true"
-			tabindex="0"
+			tabindex="-1"
 		>
 			<h2 id="modal-title" class="text-xl font-semibold mb-4 text-slate-100">Select Symbols</h2>
 			

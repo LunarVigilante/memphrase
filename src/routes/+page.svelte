@@ -108,7 +108,7 @@
 	let passphraseStrength: PassphraseStrengthResult | null = null; // State for strength
 	let optimizedStrength: OptimizedStrengthResult | null = null; // New optimized strength
 	let isGenerating = false; // Loading state for generation
-	let useOptimizedGeneration = true; // Feature flag for optimized generation
+	let useOptimizedGeneration = false; // Feature flag for optimized generation - disabled due to loading issues
 
 	let copyButtonText = 'Copy';
 
@@ -865,7 +865,7 @@
 										maxlength="3"
 										placeholder="(none)"
 										class="block w-24 rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500 text-center placeholder:text-gray-500"
-										aria-describedby="separator-help"
+										aria-label="Character(s) to place between words"
 									/>
 								</div>
 							</CustomTooltip>
