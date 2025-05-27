@@ -89,7 +89,7 @@
 			options: {
 				generationMode: 'words',
 				numWords: 3,
-				separator: ' ',
+				separator: '-',
 				capitalize: true,
 				numDigits: 1,
 				numSymbols: 0,
@@ -654,7 +654,7 @@
 	<section class="w-full rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-2xl">
 		<h3 class="text-lg font-semibold text-gray-100 mb-4">Template Benefits</h3>
 		
-		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 			<div>
 				<h4 class="text-md font-medium text-green-400 mb-2">🚀 Quick Generation</h4>
 				<p class="text-sm text-gray-300">
@@ -678,6 +678,16 @@
 					last used to optimize your password generation workflow.
 				</p>
 			</div>
+		</div>
+
+		<!-- Compatibility Note -->
+		<div class="p-4 bg-yellow-900/20 rounded-lg border border-yellow-500/50">
+			<h4 class="text-md font-medium text-yellow-400 mb-2">⚠️ Separator Compatibility</h4>
+			<p class="text-sm text-yellow-300">
+				<strong>Note:</strong> Some systems don't accept certain separators. 
+				<strong>Spaces ( )</strong> and <strong>periods (.)</strong> may be rejected by some websites or applications. 
+				<strong>Hyphens (-)</strong> and <strong>underscores (_)</strong> are most widely accepted.
+			</p>
 		</div>
 	</section>
 

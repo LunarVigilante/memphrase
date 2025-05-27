@@ -3,6 +3,8 @@
 	import CustomTooltip from '$lib/components/CustomTooltip.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import LoadingIndicator from '$lib/components/LoadingIndicator.svelte';
+	import { generatePassphraseService, type PassphraseOptions } from '$lib/passwordUtils';
+	import { defaultCategories as defaultLeafCategories } from '$lib/words';
 
 	interface RecoveryCode {
 		code: string;
@@ -21,7 +23,9 @@
 	const DIGITS_ONLY = '0123456789';
 	const LETTERS_ONLY = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-	let codeFormat: 'alphanumeric' | 'digits' | 'letters' = 'alphanumeric';
+	let codeFormat: 'alphanumeric' | 'digits' | 'letters' | 'words' = 'alphanumeric';
+	let wordSeparator = '-';
+	let wordsPerCode = 3;
 
 	function getCharacterSet(): string {
 		switch (codeFormat) {
@@ -52,16 +56,50 @@
 		return result;
 	}
 
+	function generateWordBasedRecoveryCode(): string {
+		try {
+			const options: PassphraseOptions = {
+				generationMode: 'words',
+				numWords: wordsPerCode,
+				separator: wordSeparator,
+				capitalize: true,
+				numDigits: 0,
+				numSymbols: 0,
+				selectedCategories: ['Animals', 'Adjectives', 'Nouns'], // Use simple, memorable categories
+				numSymPosition: 'append',
+				charGrouping: 'together'
+			};
+
+			return generatePassphraseService(options);
+		} catch (error) {
+			console.error('Error generating word-based code:', error);
+			// Fallback to simple word generation
+			const simpleWords = ['cat', 'dog', 'red', 'blue', 'run', 'jump', 'happy', 'sad', 'big', 'small'];
+			const words: string[] = [];
+			for (let i = 0; i < wordsPerCode; i++) {
+				words.push(simpleWords[Math.floor(Math.random() * simpleWords.length)]);
+			}
+			return words.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(wordSeparator);
+		}
+	}
+
 	async function generateRecoveryCodes() {
 		isGenerating = true;
 		copyButtonText = 'Copy All Codes';
 
 		try {
-			const charset = getCharacterSet();
 			const codes: RecoveryCode[] = [];
 
 			for (let i = 0; i < numberOfCodes; i++) {
-				const code = generateSecureRecoveryCode(codeLength, charset);
+				let code: string;
+				
+				if (codeFormat === 'words') {
+					code = generateWordBasedRecoveryCode();
+				} else {
+					const charset = getCharacterSet();
+					code = generateSecureRecoveryCode(codeLength, charset);
+				}
+				
 				codes.push({ code, used: false });
 			}
 
@@ -214,43 +252,113 @@
 
 			<!-- Code Format -->
 			<fieldset>
-				<CustomTooltip text="Character types to include in recovery codes." position="top">
+				<CustomTooltip text="Format type for recovery codes." position="top">
 					<legend class="block text-sm font-medium text-gray-300 mb-3">Code Format</legend>
 				</CustomTooltip>
-				<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+				<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 					<label class="flex items-center gap-x-3 cursor-pointer p-3 rounded-md border border-slate-600 hover:border-slate-500 {codeFormat === 'alphanumeric' ? 'bg-green-900/20 border-green-500' : 'bg-slate-700/50'}">
 						<input type="radio" bind:group={codeFormat} value="alphanumeric" class="text-green-500 focus:ring-green-500" />
 						<div>
-							<div class="text-sm font-medium text-gray-200">Mixed</div>
-							<div class="text-xs text-gray-400">A-Z, 0-9</div>
+							<div class="text-sm font-medium text-gray-200">Mixed Characters</div>
+							<div class="text-xs text-gray-400">A-Z, 0-9 (traditional)</div>
+						</div>
+					</label>
+					<label class="flex items-center gap-x-3 cursor-pointer p-3 rounded-md border border-slate-600 hover:border-slate-500 {codeFormat === 'words' ? 'bg-green-900/20 border-green-500' : 'bg-slate-700/50'}">
+						<input type="radio" bind:group={codeFormat} value="words" class="text-green-500 focus:ring-green-500" />
+						<div>
+							<div class="text-sm font-medium text-gray-200">Word-Based</div>
+							<div class="text-xs text-gray-400">Easy to type & remember</div>
 						</div>
 					</label>
 					<label class="flex items-center gap-x-3 cursor-pointer p-3 rounded-md border border-slate-600 hover:border-slate-500 {codeFormat === 'digits' ? 'bg-green-900/20 border-green-500' : 'bg-slate-700/50'}">
 						<input type="radio" bind:group={codeFormat} value="digits" class="text-green-500 focus:ring-green-500" />
 						<div>
-							<div class="text-sm font-medium text-gray-200">Numbers</div>
+							<div class="text-sm font-medium text-gray-200">Numbers Only</div>
 							<div class="text-xs text-gray-400">0-9 only</div>
 						</div>
 					</label>
 					<label class="flex items-center gap-x-3 cursor-pointer p-3 rounded-md border border-slate-600 hover:border-slate-500 {codeFormat === 'letters' ? 'bg-green-900/20 border-green-500' : 'bg-slate-700/50'}">
 						<input type="radio" bind:group={codeFormat} value="letters" class="text-green-500 focus:ring-green-500" />
 						<div>
-							<div class="text-sm font-medium text-gray-200">Letters</div>
+							<div class="text-sm font-medium text-gray-200">Letters Only</div>
 							<div class="text-xs text-gray-400">A-Z only</div>
 						</div>
 					</label>
 				</div>
 			</fieldset>
 
-			<!-- Include Hyphens -->
-			<div>
-				<CustomTooltip text="Add hyphens to make codes easier to read and type (e.g., AB12-CD34 instead of AB12CD34)." position="top">
-					<label class="flex items-center gap-x-3 cursor-pointer">
-						<input type="checkbox" bind:checked={includeHyphens} class="rounded text-green-500 focus:ring-green-500" />
-						<span class="text-sm text-gray-300">Include hyphens for readability</span>
-					</label>
-				</CustomTooltip>
-			</div>
+			<!-- Word-based Options -->
+			{#if codeFormat === 'words'}
+				<div class="space-y-4 p-4 bg-slate-700/30 rounded-lg border border-slate-600">
+					<h4 class="text-sm font-medium text-gray-300">Word-Based Options</h4>
+					
+					<div class="grid grid-cols-2 gap-4">
+						<div>
+							<CustomTooltip text="Number of words per recovery code" position="top">
+								<label for="wordsPerCode" class="block text-sm font-medium text-gray-300 mb-2">
+									Words per Code: <span class="font-bold text-green-400">{wordsPerCode}</span>
+								</label>
+							</CustomTooltip>
+							<input 
+								type="range" 
+								id="wordsPerCode" 
+								min="2" 
+								max="4" 
+								step="1"
+								bind:value={wordsPerCode}
+								class="w-full h-2 bg-gray-600 rounded-lg appearance-none cursor-pointer"
+							/>
+							<div class="flex justify-between text-xs text-gray-400 mt-1">
+								<span>2</span>
+								<span>4</span>
+							</div>
+						</div>
+						
+						<div>
+							<CustomTooltip text="Character used to separate words" position="top">
+								<label for="wordSeparator" class="block text-sm font-medium text-gray-300 mb-2">Word Separator</label>
+							</CustomTooltip>
+							<select 
+								id="wordSeparator"
+								bind:value={wordSeparator}
+								class="block w-full rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500"
+							>
+								<option value="-">Hyphen (-)</option>
+								<option value="_">Underscore (_)</option>
+								<option value=".">Period (.)</option>
+								<option value="">No separator</option>
+							</select>
+						</div>
+					</div>
+					
+					<div class="text-xs text-gray-400 bg-slate-800 p-3 rounded border border-slate-600">
+						<strong>Example:</strong> 
+						{#if codeFormat === 'words'}
+							{#if wordsPerCode === 2}
+								Tiger{wordSeparator}Swift
+							{:else if wordsPerCode === 3}
+								Tiger{wordSeparator}Moon{wordSeparator}Swift
+							{:else if wordsPerCode === 4}
+								Tiger{wordSeparator}Moon{wordSeparator}Swift{wordSeparator}Run
+							{:else}
+								Tiger{wordSeparator}Moon{wordSeparator}Swift
+							{/if}
+						{:else}
+							Select word format to see example
+						{/if}
+					</div>
+				</div>
+			{:else}
+				<!-- Include Hyphens (for character-based codes) -->
+				<div>
+					<CustomTooltip text="Add hyphens to make codes easier to read and type (e.g., AB12-CD34 instead of AB12CD34)." position="top">
+						<label class="flex items-center gap-x-3 cursor-pointer">
+							<input type="checkbox" bind:checked={includeHyphens} class="rounded text-green-500 focus:ring-green-500" />
+							<span class="text-sm text-gray-300">Include hyphens for readability</span>
+						</label>
+					</CustomTooltip>
+				</div>
+			{/if}
 		</div>
 
 		<!-- Generate Button -->
