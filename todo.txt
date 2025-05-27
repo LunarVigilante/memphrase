@@ -30,7 +30,7 @@
 
 ### Advanced Password Features (Priority 1)
 - [x] Bulk password generation (10-100 passwords at once)
-- [ ] Password templates/profiles system
+- [x] Password templates/profiles system
 - [ ] Password history (last 20 generated, local storage only)
 - [ ] Password strength analyzer for existing passwords
 - [ ] Pronounceable password generation mode
