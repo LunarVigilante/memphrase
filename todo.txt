@@ -32,8 +32,8 @@
 - [x] Bulk password generation (10-100 passwords at once)
 - [x] Password templates/profiles system with separator compatibility warnings
 - [x] Word-based recovery codes (easy to type alternative to random strings)
-- [ ] Password history (last 20 generated, local storage only)
-- [ ] Password strength analyzer for existing passwords
+- [x] Password history (last 20 generated, local storage only)
+- [x] Password strength analyzer for existing passwords
 - [ ] Pronounceable password generation mode
 
 ### Performance Optimizations (Priority 1)
@@ -100,13 +100,17 @@
 - [ ] Pattern analysis visualization
 - [ ] Interactive password strength breakdown
 
-### Internationalization
+### Internationalization (High Priority - Make accessible to everyone globally)
 - [ ] Set up paraglide for UI translations
 - [ ] Create English language file
 - [ ] Add language switcher component
 - [ ] Support locale-specific word lists
-- [ ] Translate all UI text
-- [ ] Add RTL support
+- [ ] Translate all UI text to major languages (Spanish, French, German, Italian, Portuguese, Russian, Chinese, Japanese, Korean, Arabic, Hindi)
+- [ ] Add RTL support for Arabic and Hebrew
+- [ ] Implement dynamic locale detection
+- [ ] Create translation workflow for community contributions
+- [ ] Add proper internationalization for number formatting, dates, and currency
+- [ ] Test accessibility with screen readers in multiple languages
 
 ## ONGOING IMPROVEMENTS
 
@@ -173,6 +177,11 @@
 - [x] Double tooltip max-width from 250px to 500px
 - [x] Create consistent Footer component across all pages
 - [x] Improve spacing and visual hierarchy throughout the app
+- [x] Fix accessibility warnings - add aria-label to icon-only buttons
+- [x] Reorganize navigation with top navigation bar and categorized tool dropdowns
+- [x] Simplify footer to focus on essential links (resources, legal, support)
+- [x] Remove unused CSS selectors from terms page
+- [x] Enhance bulk generator with full customization (generation modes, positioning, custom symbols)
 
 ---
 # Priority Levels:

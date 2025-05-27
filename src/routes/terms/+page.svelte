@@ -88,12 +88,5 @@
 	.prose ul {
 		padding-left: 1.5em;
 	}
-	.prose a {
-		color: #34d399; /* emerald-400 */
-		text-decoration: none;
-	}
-	.prose a:hover {
-		color: #6ee7b7; /* emerald-300 */
-		text-decoration: underline;
-	}
+
 </style> 

@@ -2,37 +2,29 @@
 	const currentYear = new Date().getFullYear();
 </script>
 
-<footer class="w-full max-w-4xl mx-auto py-12 mt-6 border-t border-slate-700">
-	<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-		<!-- Tools Section -->
-		<div class="text-center">
-			<h3 class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">Tools</h3>
-			<div class="space-y-2">
-				<a href="/" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Passphrase Generator</a>
-				<a href="/bulk-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Bulk Generator</a>
-				<a href="/password-templates" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Password Templates</a>
-				<a href="/secret-key-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Secret Key Generator</a>
-				<a href="/ssh-key-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">SSH Key Generator</a>
-				<a href="/totp-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">TOTP Generator</a>
-				<a href="/recovery-codes" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Recovery Codes</a>
-				<a href="/uuid-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">UUID Generator</a>
-				<a href="/checksum-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Checksum Generator</a>
-				<a href="/certificate-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Certificate Generator</a>
-			</div>
-		</div>
-
+<footer class="w-full max-w-4xl mx-auto py-8 mt-6 border-t border-slate-700">
+	<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
 		<!-- Resources Section -->
 		<div class="text-center">
-			<h3 class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">Resources</h3>
+			<h3 class="text-sm font-semibold text-slate-300 mb-3 uppercase tracking-wider">Resources</h3>
 			<div class="space-y-2">
 				<a href="/password-guide" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Password Guide</a>
 				<a href="/security-tips" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Security Tips</a>
 			</div>
 		</div>
 
+		<!-- Legal Section -->
+		<div class="text-center">
+			<h3 class="text-sm font-semibold text-slate-300 mb-3 uppercase tracking-wider">Legal</h3>
+			<div class="space-y-2">
+				<a href="/terms" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Terms of Service</a>
+				<a href="/privacy" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Privacy Policy</a>
+			</div>
+		</div>
+
 		<!-- Support Section -->
 		<div class="text-center">
-			<h3 class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">Support</h3>
+			<h3 class="text-sm font-semibold text-slate-300 mb-3 uppercase tracking-wider">Support</h3>
 			<div class="space-y-2">
 				<a href="/contact" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Contact Us</a>
 				<a href="/donate" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Donate</a>
@@ -46,14 +38,15 @@
 		</div>
 	</div>
 
+	<!-- Privacy Notice -->
+	<div class="text-center mb-4">
+		<p class="text-xs text-slate-500 max-w-2xl mx-auto">
+			🔒 All password generation and analysis happens locally in your browser. No data is transmitted to servers or stored remotely.
+		</p>
+	</div>
+
 	<!-- Bottom Section -->
-	<div class="border-t border-slate-700 pt-6 text-center">
-		<div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-4">
-			<div class="flex gap-6 text-xs">
-				<a href="/terms" class="text-slate-400 hover:text-slate-200 transition-colors">Terms of Service</a>
-				<a href="/privacy" class="text-slate-400 hover:text-slate-200 transition-colors">Privacy Policy</a>
-			</div>
-		</div>
+	<div class="text-center">
 		<p class="text-xs text-slate-500">
 			&copy; {currentYear} MemPhrase. All rights reserved.
 		</p>

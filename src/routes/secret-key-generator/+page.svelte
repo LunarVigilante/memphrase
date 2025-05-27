@@ -154,15 +154,20 @@
 	<meta name="description" content="Generate strong, random cryptographic keys (Base64, Base64URL, Hex) for your applications." />
 </svelte:head>
 
-<div class="container mx-auto max-w-2xl p-4 md:p-6 text-slate-200">
-	<div class="bg-slate-800 border border-slate-700 rounded-xl shadow-xl p-6 md:p-8">
-		<div class="prose prose-invert prose-sm md:prose-base max-w-none text-center mb-6">
-			<h1 class="text-3xl font-bold text-slate-100 mb-3">Secret Key Generator</h1>
-			<p class="text-lg text-slate-300">
-				Generate strong, random cryptographic keys for your applications, APIs, and services.
-			</p>
-		</div>
+<main class="container mx-auto mt-1 flex max-w-4xl flex-col items-center gap-6 p-4 md:mt-3 md:p-6">
+	<div class="flex items-center justify-center">
+		<img src="/memphrase-logo.png" alt="MemPhrase Logo" class="h-12 w-12 md:h-16 md:w-16 mr-2" loading="lazy" />
+		<h1 class="text-center text-4xl font-bold text-gray-100 md:text-5xl [text-shadow:_2px_2px_5px_rgb(0_0_0_/_0.6)]">
+			Secret Key Generator
+		</h1>
+	</div>
 
+	<p class="text-center text-gray-300 max-w-3xl">
+		Generate strong, random cryptographic keys for your applications, APIs, and services. 
+		Perfect for JWT signing secrets, API authentication tokens, and encryption keys.
+	</p>
+
+	<section class="w-full rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-2xl">
 		<div class="space-y-4 max-w-md mx-auto">
 			<!-- Key Purpose Section -->
 			<div>
@@ -330,10 +335,10 @@
 				<li>• For maximum security, generate new keys regularly</li>
 			</ul>
 		</div>
-	</div>
-</div>
+	</section>
 
-<Footer />
+	<Footer />
+</main>
 
 <style>
 	/* Styles for this page - custom-radio should now be global from app.css */

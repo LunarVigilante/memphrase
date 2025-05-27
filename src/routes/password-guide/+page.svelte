@@ -7,10 +7,21 @@
 	<meta name="description" content="Learn about password strength, entropy, how MemPhrase generates passwords, general security tips, and password managers." />
 </svelte:head>
 
-<div class="container mx-auto max-w-2xl p-4 md:p-6 text-slate-200">
-	<div class="bg-slate-800 border border-slate-700 rounded-xl shadow-xl p-6 md:p-8">
+<main class="container mx-auto mt-1 flex max-w-4xl flex-col items-center gap-6 p-4 md:mt-3 md:p-6">
+	<div class="flex items-center justify-center">
+		<img src="/memphrase-logo.png" alt="MemPhrase Logo" class="h-12 w-12 md:h-16 md:w-16 mr-2" loading="lazy" />
+		<h1 class="text-center text-4xl font-bold text-gray-100 md:text-5xl [text-shadow:_2px_2px_5px_rgb(0_0_0_/_0.6)]">
+			Password Guide
+		</h1>
+	</div>
+
+	<p class="text-center text-gray-300 max-w-4xl">
+		Learn about password security, entropy, how MemPhrase generates passwords, and best practices 
+		for protecting your digital accounts. Understand the science behind strong passwords.
+	</p>
+
+	<section class="w-full rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-2xl">
 		<div class="prose prose-invert prose-sm md:prose-base max-w-none">
-			<h1 class="text-3xl font-bold text-slate-100 mb-6 text-center">Password Security & MemPhrase</h1>
 
 			<h2 class="text-2xl font-semibold text-slate-100 mt-8 mb-4">Understanding Password Strength & Entropy</h2>
 			<p>
@@ -99,14 +110,14 @@
 				<em>Disclaimer: The listing of these password managers is for informational purposes only and does not constitute an endorsement by MemPhrase. Please conduct your own research before choosing any security product.</em>
 			</p>
 		</div>
-	</div>
-</div>
+	</section>
 
-<Footer />
+	<Footer />
+</main>
 
 <style>
 	/* Basic styling for prose content */
-	.prose h1, .prose h2, .prose h3 {
+	.prose h2, .prose h3 {
 		margin-bottom: 0.5em;
 	}
 	.prose p, .prose ul {
