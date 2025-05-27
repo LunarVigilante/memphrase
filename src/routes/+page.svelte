@@ -8,6 +8,7 @@
 		calculatePassphraseStrength,
 		type PassphraseStrengthResult,
 		DEFAULT_PASSPHRASE_SYMBOLS, // Import default symbols
+	ALL_AVAILABLE_SYMBOLS, // Import all available symbols for selection
 		describeWordPattern // Import the new pattern description function
 	} from '../lib/passwordUtils';
 	import { categories as wordListCategories, defaultCategories as defaultLeafCategories, getCategoryByName, type WordCategory } from '$lib/words'; // Import categories
@@ -38,7 +39,7 @@
 		numbersSymbolsOpen?: boolean;
 
 		// New settings for generation mode
-		generationMode: 'words' | 'randomChars';
+		generationMode: 'words' | 'randomChars' | 'pronounceable';
 		randomPasswordLength?: number;
 		randomIncludeLowercase?: boolean;
 		randomIncludeUppercase?: boolean;
@@ -47,6 +48,11 @@
 		randomCharsOptionsOpen?: boolean; // For collapsible section
 		customSymbolsWordMode: string[];
 		customSymbolsRandomMode: string[];
+		
+		// Pronounceable settings
+		pronounceableSyllables?: number;
+		pronounceableComplexity?: 'simple' | 'balanced' | 'complex';
+		pronounceableOptionsOpen?: boolean;
 	}
 
 	const SETTINGS_KEY = 'memPhraseSettings';
@@ -64,11 +70,12 @@
 	let charGrouping: 'together' | 'separate' = 'together';
 
 	// Generation mode reactive variable
-	let generationMode: 'words' | 'randomChars' = 'words'; // Default to word-based
+	let generationMode: 'words' | 'randomChars' | 'pronounceable' = 'words'; // Default to word-based
 
 	// Define generation mode options
 	const generationModeOptions = [
 		{ value: 'words', label: 'Word-based (Memorable)' },
+		{ value: 'pronounceable', label: 'Pronounceable (Balanced)' },
 		{ value: 'randomChars', label: 'Random Characters (Strong)' }
 	];
 
@@ -87,6 +94,11 @@
 	// State for collapsible sections - default to closed
 	let wordCategoriesOpen = false;
 	let numbersSymbolsOpen = false;
+	
+	// Pronounceable settings
+	let pronounceableSyllables = 4;
+	let pronounceableComplexity: 'simple' | 'balanced' | 'complex' = 'balanced';
+	let pronounceableOptionsOpen = false;
 
 	// Clamping for numDigits and numSymbols to 0-5 range (Word mode specific)
 	$: numDigitsForWordMode = Math.max(0, Math.min(5, Number(numDigits) || 0));
@@ -127,7 +139,7 @@
 	$: noCategoriesSelectedError = selectedCategories.length === 0;
 
 	// Reactive trigger for settings changes
-	$: settingsSignature = `${generationMode}-${numWords}-${separator}-${capitalize}-${numDigitsForWordMode}-${numSymbolsForWordMode}-${selectedCategories.join(',')}-${numSymPosition}-${autoCopy}-${charGrouping}-${randomPasswordLength}-${randomIncludeLowercase}-${randomIncludeUppercase}-${randomIncludeNumbers}-${randomIncludeSymbols}-${customSymbolsWordMode.join('')}-${customSymbolsRandomMode.join('')}`;
+	$: settingsSignature = `${generationMode}-${numWords}-${separator}-${capitalize}-${numDigitsForWordMode}-${numSymbolsForWordMode}-${selectedCategories.join(',')}-${numSymPosition}-${autoCopy}-${charGrouping}-${randomPasswordLength}-${randomIncludeLowercase}-${randomIncludeUppercase}-${randomIncludeNumbers}-${randomIncludeSymbols}-${customSymbolsWordMode.join('')}-${customSymbolsRandomMode.join('')}-${pronounceableSyllables}-${pronounceableComplexity}`;
 
 	let initialSignature = '';
 	let initialSignatureCaptured = false;
@@ -151,8 +163,8 @@
 			numWords,
 			separator,
 			capitalize,
-			numDigits: generationMode === 'words' ? numDigitsForWordMode : 0,
-			numSymbols: generationMode === 'words' ? numSymbolsForWordMode : 0,
+			numDigits: (generationMode === 'words' || generationMode === 'pronounceable') ? numDigitsForWordMode : 0,
+			numSymbols: (generationMode === 'words' || generationMode === 'pronounceable') ? numSymbolsForWordMode : 0,
 			selectedCategories: generationMode === 'words' ? selectedCategories : [],
 			numSymPosition,
 			charGrouping,
@@ -162,7 +174,10 @@
 			randomIncludeUppercase: generationMode === 'randomChars' ? randomIncludeUppercase : undefined,
 			randomIncludeNumbers: generationMode === 'randomChars' ? randomIncludeNumbers : undefined,
 			randomIncludeSymbols: generationMode === 'randomChars' ? randomIncludeSymbols : undefined,
-			customSymbols: generationMode === 'words' ? customSymbolsWordMode : customSymbolsRandomMode
+			customSymbols: generationMode === 'words' ? customSymbolsWordMode : customSymbolsRandomMode,
+			// Pronounceable options
+			pronounceableSyllables: generationMode === 'pronounceable' ? pronounceableSyllables : undefined,
+			pronounceableComplexity: generationMode === 'pronounceable' ? pronounceableComplexity : undefined
 		};
 		// If an error message is the passphrase, reflect that in strength display
 		if (passphrase.startsWith('Error:') || passphrase.startsWith('Invalid Options')) {
@@ -282,6 +297,22 @@
 						customSymbols: customSymbolsWordMode
 					});
 				}
+			} else if (generationMode === 'pronounceable') {
+				// Pronounceable password generation
+				passphrase = generatePassphraseService({
+					generationMode: 'pronounceable',
+					numWords: 0,
+					selectedCategories: [],
+					separator: '',
+					capitalize,
+					numDigits: numDigitsForWordMode,
+					numSymbols: numSymbolsForWordMode,
+					numSymPosition,
+					charGrouping: 'together',
+					pronounceableSyllables,
+					pronounceableComplexity,
+					customSymbols: customSymbolsWordMode
+				});
 			} else {
 				// Random character generation
 				passphrase = generatePassphraseService({
@@ -361,7 +392,11 @@
 			randomIncludeSymbols,
 			randomCharsOptionsOpen,
 			customSymbolsWordMode,
-			customSymbolsRandomMode
+			customSymbolsRandomMode,
+			// Pronounceable settings
+			pronounceableSyllables,
+			pronounceableComplexity,
+			pronounceableOptionsOpen
 		};
 		localStorage.setItem(SETTINGS_KEY, JSON.stringify(currentSettings));
 	}
@@ -388,7 +423,7 @@
 				numbersSymbolsOpen = parsedSettings.numbersSymbolsOpen === undefined ? false : parsedSettings.numbersSymbolsOpen;
 
 				// Load new settings
-				generationMode = (parsedSettings.generationMode === 'randomChars') ? 'randomChars' : 'words';
+				generationMode = (parsedSettings.generationMode === 'randomChars') ? 'randomChars' : (parsedSettings.generationMode === 'pronounceable') ? 'pronounceable' : 'words';
 				randomPasswordLength = parsedSettings.randomPasswordLength === undefined ? 16 : Number(parsedSettings.randomPasswordLength);
 				randomIncludeLowercase = parsedSettings.randomIncludeLowercase === undefined ? true : parsedSettings.randomIncludeLowercase;
 				randomIncludeUppercase = parsedSettings.randomIncludeUppercase === undefined ? true : parsedSettings.randomIncludeUppercase;
@@ -401,6 +436,11 @@
 				customSymbolsRandomMode = Array.isArray(parsedSettings.customSymbolsRandomMode) && parsedSettings.customSymbolsRandomMode.length > 0
 									? parsedSettings.customSymbolsRandomMode
 									: DEFAULT_PASSPHRASE_SYMBOLS.split('');
+				
+				// Load pronounceable settings
+				pronounceableSyllables = parsedSettings.pronounceableSyllables === undefined ? 4 : Number(parsedSettings.pronounceableSyllables);
+				pronounceableComplexity = (parsedSettings.pronounceableComplexity === 'simple' || parsedSettings.pronounceableComplexity === 'complex') ? parsedSettings.pronounceableComplexity : 'balanced';
+				pronounceableOptionsOpen = parsedSettings.pronounceableOptionsOpen === undefined ? false : parsedSettings.pronounceableOptionsOpen;
 
 			} catch (e) {
 				console.error('Failed to parse MemPhrase settings from localStorage', e);
@@ -483,6 +523,11 @@
 		randomCharsOptionsOpen = false;
 		customSymbolsWordMode = DEFAULT_PASSPHRASE_SYMBOLS.split('');
 		customSymbolsRandomMode = DEFAULT_PASSPHRASE_SYMBOLS.split('');
+
+		// Pronounceable defaults
+		pronounceableSyllables = 4;
+		pronounceableComplexity = 'balanced';
+		pronounceableOptionsOpen = false;
 
 		// General defaults
 		generationMode = 'words';
@@ -734,7 +779,7 @@
 			(generationMode === 'randomChars' && !randomIncludeLowercase && !randomIncludeUppercase && !randomIncludeNumbers && !randomIncludeSymbols)
 		}
 	>
-		{generationMode === 'words' ? 'Generate Passphrase' : 'Generate Password'}
+		{generationMode === 'words' ? 'Generate Passphrase' : generationMode === 'pronounceable' ? 'Generate Pronounceable' : 'Generate Password'}
 	</button>
 
 	<!-- Passphrase Settings Card -->
@@ -976,6 +1021,161 @@
 					</fieldset>
 				</div>
 			</div>
+		{:else if generationMode === 'pronounceable'}
+			<!-- PRONOUNCEABLE OPTIONS -->
+			<div class="space-y-6">
+				<!-- Syllable Configuration -->
+				<div class="space-y-4">
+					<CustomTooltip text="Number of syllables in the pronounceable password. More syllables create longer, stronger passwords." position="top">
+						<div class="space-y-2">
+							<label for="pronounceableSyllables" class="block text-sm font-medium text-gray-300">Number of Syllables: <span class="font-bold text-green-400">{pronounceableSyllables}</span></label>
+							<input 
+								type="range" 
+								id="pronounceableSyllables" 
+								name="pronounceableSyllables" 
+								min="2" 
+								max="8" 
+								step="1" 
+								bind:value={pronounceableSyllables} 
+								style="--slider-fill-percent: {((pronounceableSyllables - 2) / (8 - 2)) * 100}%" 
+								class="custom-slider w-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" 
+							/>
+						</div>
+					</CustomTooltip>
+
+					<!-- Complexity Selection -->
+					<fieldset class="mt-4">
+						<CustomTooltip text="Controls the complexity of syllable patterns. Simple uses basic consonant-vowel patterns, while complex includes digraphs and trigraphs." position="top">
+							<legend class="block text-sm font-medium text-gray-300 mb-3">Complexity Level</legend>
+						</CustomTooltip>
+						<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+							<CustomTooltip text="Basic patterns with simple consonants and vowels. Easier to pronounce and type." position="top">
+								<label class="flex items-center gap-x-3 cursor-pointer p-3 border border-slate-600 rounded-lg hover:border-slate-500 transition-colors {pronounceableComplexity === 'simple' ? 'border-green-500 bg-green-900/20' : ''}">
+									<input type="radio" bind:group={pronounceableComplexity} value="simple" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
+									<div>
+										<div class="text-sm font-medium text-gray-200">Simple</div>
+										<div class="text-xs text-gray-400">Basic patterns</div>
+									</div>
+								</label>
+							</CustomTooltip>
+							<CustomTooltip text="Moderate complexity with common letter combinations. Good balance of security and usability." position="top">
+								<label class="flex items-center gap-x-3 cursor-pointer p-3 border border-slate-600 rounded-lg hover:border-slate-500 transition-colors {pronounceableComplexity === 'balanced' ? 'border-green-500 bg-green-900/20' : ''}">
+									<input type="radio" bind:group={pronounceableComplexity} value="balanced" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
+									<div>
+										<div class="text-sm font-medium text-gray-200">Balanced</div>
+										<div class="text-xs text-gray-400">Recommended</div>
+									</div>
+								</label>
+							</CustomTooltip>
+							<CustomTooltip text="Advanced patterns with complex consonant clusters and vowel combinations. Maximum security." position="top">
+								<label class="flex items-center gap-x-3 cursor-pointer p-3 border border-slate-600 rounded-lg hover:border-slate-500 transition-colors {pronounceableComplexity === 'complex' ? 'border-green-500 bg-green-900/20' : ''}">
+									<input type="radio" bind:group={pronounceableComplexity} value="complex" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
+									<div>
+										<div class="text-sm font-medium text-gray-200">Complex</div>
+										<div class="text-xs text-gray-400">Maximum strength</div>
+									</div>
+								</label>
+							</CustomTooltip>
+						</div>
+					</fieldset>
+
+					<!-- General Options -->
+					<fieldset class="mt-4">
+						<CustomTooltip text="General formatting options for pronounceable passwords." position="top">
+							<legend class="block text-sm font-medium text-gray-300 mb-2">Formatting</legend>
+						</CustomTooltip>
+						<div class="grid grid-cols-1 gap-3">
+							<CustomTooltip text="Capitalize the first letter of the password." position="top">
+								<label class="flex items-center gap-x-3 cursor-pointer">
+									<input type="checkbox" bind:checked={capitalize} class="custom-checkbox focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" style={`--checkmark-url: ${checkmarkDataUrl}`} />
+									<span class="text-sm text-gray-300 select-none hover:text-gray-100">Capitalize first letter</span>
+								</label>
+							</CustomTooltip>
+							<CustomTooltip text="Automatically copy the generated password to your clipboard." position="top">
+								<label class="flex items-center gap-x-3 cursor-pointer">
+									<input type="checkbox" bind:checked={autoCopy} class="custom-checkbox focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" style={`--checkmark-url: ${checkmarkDataUrl}`} />
+									<span class="text-sm text-gray-300 select-none hover:text-gray-100">Auto-copy new password</span>
+								</label>
+							</CustomTooltip>
+						</div>
+					</fieldset>
+
+					<!-- Numbers & Symbols for Pronounceable -->
+					<fieldset class="mt-3">
+						<CustomTooltip text="Settings for including numbers and symbols in pronounceable passwords." position="top">
+							<button 
+								type="button"
+								on:click={() => pronounceableOptionsOpen = !pronounceableOptionsOpen}
+								aria-expanded={pronounceableOptionsOpen}
+								aria-controls="pronounceable-numbers-symbols-content"
+								class="w-full flex justify-between items-center text-left text-sm font-medium mb-2 p-2 rounded-t-md bg-slate-800 hover:bg-slate-700 border-b border-slate-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800"
+							>
+								<span class="text-gray-200">Numbers & Symbols</span>
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 transform transition-transform duration-200 text-gray-400 {pronounceableOptionsOpen ? 'rotate-0' : '-rotate-90'}">
+									<path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+								</svg>
+							</button>
+						</CustomTooltip>
+						{#if pronounceableOptionsOpen}
+							<div id="pronounceable-numbers-symbols-content" class="space-y-4 pt-3 pb-1 px-1" transition:slide={{ duration: 200 }}>
+								<!-- Number of Digits Input -->
+								<CustomTooltip text="How many digits to include (0-5). 0 means no digits." position="top">
+									<div class="pl-0">
+										<label for="numDigitsPronounceableInput" class="mb-1 block text-sm font-medium text-gray-300">Number of Digits (0-5): <span class="font-bold text-green-400">{numDigitsForWordMode}</span></label>
+										<input type="number" id="numDigitsPronounceableInput" bind:value={numDigits} min="0" max="5" class="block w-20 rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500" />
+									</div>
+								</CustomTooltip>
+								
+								<!-- Number of Symbols Input -->
+								<CustomTooltip text="How many symbols to include (0-5). 0 means no symbols." position="left">
+									<div class="pl-0 mt-3">
+										<label for="numSymbolsPronounceableInput" class="mb-1 block text-sm font-medium text-gray-300">Number of Symbols (0-5): <span class="font-bold text-green-400">{numSymbolsForWordMode}</span></label>
+										<div class="flex items-center">
+											<input type="number" id="numSymbolsPronounceableInput" bind:value={numSymbols} min="0" max="5" class="block w-20 rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500" />
+											{#if numSymbolsForWordMode > 0}
+												<CustomTooltip text="Customize which symbols are used for pronounceable passwords." position="right">
+													<button type="button" on:click={() => openSymbolModal('words')} class="cursor-pointer ml-3 p-1 text-xl text-slate-400 hover:text-slate-100 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800 rounded-md flex items-center justify-center transition-all duration-150 ease-in-out" aria-label="Customize symbols for pronounceable passwords" title="Customize Symbols">
+														⚙️
+													</button>
+												</CustomTooltip>
+											{/if}
+										</div>
+									</div>
+								</CustomTooltip>
+
+								{#if numDigitsForWordMode > 0 || numSymbolsForWordMode > 0}
+									<CustomTooltip text="Where to place the numbers and/or symbols relative to the pronounceable password." position="top">
+										<fieldset class="mt-4">
+											<legend class="block text-sm font-medium text-gray-300 mb-1">Number/Symbol Position</legend>
+											<!-- Radio buttons for numSymPosition -->
+											<div class="flex flex-col gap-2 pl-2">
+												<CustomTooltip text="Add numbers/symbols at the end of the password." position="bottom">
+													<label class="flex items-center gap-x-2 cursor-pointer">
+														<input type="radio" bind:group={numSymPosition} name="numSymPositionPronounceable" value="append" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
+														<span class="text-sm text-gray-300 select-none hover:text-gray-100">Append (default)</span>
+													</label>
+												</CustomTooltip>
+												<CustomTooltip text="Add numbers/symbols at the beginning of the password." position="bottom">
+													<label class="flex items-center gap-x-2 cursor-pointer">
+														<input type="radio" bind:group={numSymPosition} name="numSymPositionPronounceable" value="prepend" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
+														<span class="text-sm text-gray-300 select-none hover:text-gray-100">Prepend</span>
+													</label>
+												</CustomTooltip>
+												<CustomTooltip text="Places numbers/symbols at random positions within the password." position="bottom">
+													<label class="flex items-center gap-x-2 cursor-pointer">
+														<input type="radio" bind:group={numSymPosition} name="numSymPositionPronounceable" value="interspersed" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
+														<span class="text-sm text-gray-300 select-none hover:text-gray-100">Interspersed</span>
+													</label>
+												</CustomTooltip>
+											</div>
+										</fieldset>
+									</CustomTooltip>
+								{/if}
+							</div>
+						{/if}
+					</fieldset>
+				</div>
+			</div>
 		{:else if generationMode === 'randomChars'}
 			<!-- RANDOM CHARACTER OPTIONS -->
 			<div class="space-y-6">
@@ -1071,7 +1271,7 @@
 
 	<SymbolSelectorModal 
 		bind:isOpen={showSymbolModal} 
-		availableSymbols={DEFAULT_PASSPHRASE_SYMBOLS} 
+					availableSymbols={ALL_AVAILABLE_SYMBOLS} 
 		selectedSymbols={editingSymbolSetFor === 'words' ? customSymbolsWordMode : customSymbolsRandomMode}
 		on:save={handleSymbolSave} 
 		on:close={() => showSymbolModal = false}
@@ -1080,7 +1280,7 @@
 	<!-- Privacy/Security Notice -->
 	<div class="w-full text-center mt-2 mb-0">
 		<p class="text-xs text-slate-500">
-			{generationMode === 'words' ? 'Passphrases' : 'Passwords'} are generated entirely in your browser and are not stored or transmitted.
+			{generationMode === 'words' ? 'Passphrases' : generationMode === 'pronounceable' ? 'Pronounceable passwords' : 'Passwords'} are generated entirely in your browser and are not stored or transmitted.
 		</p>
 	</div>
 

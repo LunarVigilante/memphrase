@@ -9,7 +9,8 @@
 		type PassphraseOptions,
 		calculatePassphraseStrength,
 		type PassphraseStrengthResult,
-		DEFAULT_PASSPHRASE_SYMBOLS
+		DEFAULT_PASSPHRASE_SYMBOLS,
+		ALL_AVAILABLE_SYMBOLS
 	} from '$lib/passwordUtils';
 	import { categories as wordListCategories, defaultCategories as defaultLeafCategories } from '$lib/words';
 
@@ -665,7 +666,9 @@
 <!-- Symbol Selector Modal -->
 {#if showSymbolModal}
 	<SymbolSelectorModal
-		initialSymbols={editingSymbolSetFor === 'words' ? customSymbolsWordMode : customSymbolsRandomMode}
+		bind:isOpen={showSymbolModal}
+		availableSymbols={ALL_AVAILABLE_SYMBOLS}
+		selectedSymbols={editingSymbolSetFor === 'words' ? customSymbolsWordMode : customSymbolsRandomMode}
 		on:save={handleSymbolUpdate}
 		on:close={() => showSymbolModal = false}
 	/>
