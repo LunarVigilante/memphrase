@@ -28,6 +28,8 @@
 	import * as m from '$lib/paraglide/messages';
 	// Import performance optimizations
 	import { debounce, throttle, memoize, PerformanceMonitor } from '$lib/utils/performanceOptimizations';
+	// Import accessibility utilities
+	import { accessibilityManager, ScreenReaderUtils, MotionUtils } from '$lib/utils/accessibilityUtils';
 
 	interface MemPhraseSettings {
 		numWords: number;
@@ -78,9 +80,9 @@
 
 	// Define generation mode options
 	const generationModeOptions = [
-		{ value: 'words', label: (m as any)['mode.words']() },
-		{ value: 'pronounceable', label: (m as any)['mode.pronounceable']() },
-		{ value: 'randomChars', label: (m as any)['mode.random']() }
+		{ value: 'words', label: (m as any)["mode.words"]() },
+		{ value: 'pronounceable', label: (m as any)["mode.pronounceable"]() },
+		{ value: 'randomChars', label: (m as any)["mode.random"]() }
 	];
 
 	// New state for generation mode
@@ -363,6 +365,11 @@
 			// Explicitly update strength display after generation
 			updateStrengthDisplay();
 			
+			// Announce new passphrase to screen readers
+			if (passphrase && !passphrase.startsWith('Error:')) {
+				ScreenReaderUtils.announce(`New ${generationMode === 'words' ? 'passphrase' : 'password'} generated`, 'polite');
+			}
+			
 			perfMonitor.mark('generation-end');
 			perfMonitor.measure('passphrase-generation', 'generation-start', 'generation-end');
 		}
@@ -382,16 +389,19 @@
 	async function copyPassword() {
 		if (!navigator.clipboard) {
 			console.error('Clipboard API not supported');
+			ScreenReaderUtils.announce('Clipboard not supported', 'assertive');
 			return;
 		}
 		try {
 			await navigator.clipboard.writeText(passphrase); // Copy passphrase
-			copyButtonText = 'Copied!';
+			copyButtonText = (m as any)['main.copied']();
+			ScreenReaderUtils.announce('Passphrase copied to clipboard', 'polite');
 			setTimeout(() => {
-				copyButtonText = 'Copy';
+				copyButtonText = (m as any)['main.copy_button']();
 			}, 1500);
 		} catch (err) {
 			console.error('Failed to copy passphrase: ', err);
+			ScreenReaderUtils.announce('Failed to copy passphrase', 'assertive');
 		}
 	}
 
@@ -697,9 +707,10 @@
 	class="container mx-auto mt-1 flex max-w-2xl flex-col items-center gap-4 p-4 md:mt-3 md:p-6"
 >
 	<!-- Skip Navigation Links -->
-	<div class="sr-only focus-within:not-sr-only">
-		<a href="#passphrase-display" class="skip-link bg-green-500 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400">Skip to passphrase</a>
-		<a href="#settings" class="skip-link bg-green-500 text-white px-4 py-2 rounded-md ml-2 focus:outline-none focus:ring-2 focus:ring-green-400">Skip to settings</a>
+	<div class="sr-only focus-within:not-sr-only fixed top-0 left-0 z-50 p-2 bg-slate-900">
+		<a href="#passphrase-display" class="skip-link enhanced-focus bg-green-500 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 mr-2">Skip to passphrase</a>
+		<a href="#settings" class="skip-link enhanced-focus bg-green-500 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 mr-2">Skip to settings</a>
+		<a href="#generate-button" class="skip-link enhanced-focus bg-green-500 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400">Skip to generate button</a>
 	</div>
 
 	<div class="flex items-center justify-center">
@@ -798,15 +809,25 @@
 
 	<!-- Generate Button -->
 	<button
+		id="generate-button"
 		on:click={generatePassphrase}
-		class="button-gleam w-full rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-3.5 text-xl font-semibold text-white shadow-md transition-all duration-150 ease-in-out hover:from-green-600 hover:to-emerald-700 active:bg-emerald-700 active:scale-95 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800"
+		class="button-gleam enhanced-focus w-full rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-3.5 text-xl font-semibold text-white shadow-md transition-all duration-150 ease-in-out hover:from-green-600 hover:to-emerald-700 active:bg-emerald-700 active:scale-95 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800"
 		disabled={
 			(generationMode === 'words' && selectedCategories.length === 0) || 
 			(generationMode === 'randomChars' && !randomIncludeLowercase && !randomIncludeUppercase && !randomIncludeNumbers && !randomIncludeSymbols)
 		}
+		aria-describedby="generation-instructions"
 	>
-		{generationMode === 'words' ? 'Generate Passphrase' : generationMode === 'pronounceable' ? 'Generate Pronounceable' : 'Generate Password'}
+		{generationMode === 'words' ? (m as any)['main.generate_button']() : generationMode === 'pronounceable' ? (m as any)['main.generate_pronounceable']() : (m as any)['main.generate_password']()}
 	</button>
+	
+	<div id="generation-instructions" class="sr-only">
+		{generationMode === 'words' 
+			? 'Generate a new passphrase using the selected word categories and settings' 
+			: generationMode === 'pronounceable' 
+				? 'Generate a new pronounceable password with the specified complexity' 
+				: 'Generate a new random character password with the selected character types'}
+	</div>
 
 	<!-- Passphrase Settings Card -->
 	<section
@@ -830,7 +851,7 @@
 					<div class="w-full">
 						<CustomTooltip text="Total number of words in your passphrase (1-7). More words significantly increase strength and memorability." position="top">
 							<div class="space-y-2">
-								<label for="numWords" class="block text-sm font-medium text-gray-300">Number of Words: <span class="font-bold text-green-400">{numWords}</span></label>
+								<label for="numWords" class="block text-sm font-medium text-gray-300">{(m as any)['words.count']({ count: numWords })}</label>
 								<input type="range" id="numWords" name="numWords" min="1" max="7" step="1" bind:value={numWords} style="--slider-fill-percent: {sliderFillPercent}%" class="custom-slider w-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
 							</div>
 						</CustomTooltip>
@@ -846,7 +867,7 @@
 								aria-controls="word-categories-content"
 								class="w-full flex justify-between items-center text-left text-sm font-medium mb-2 p-2 rounded-t-md bg-slate-800 hover:bg-slate-700 border-b border-slate-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800"
 							>
-								<span class="{noCategoriesSelectedError && !wordCategoriesOpen ? 'text-red-400' : 'text-gray-200'}">Word Categories</span>
+								<span class="{noCategoriesSelectedError && !wordCategoriesOpen ? 'text-red-400' : 'text-gray-200'}">{(m as any)['settings.word_categories']()}</span>
 								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 transform transition-transform duration-200 text-gray-400 {wordCategoriesOpen ? 'rotate-0' : '-rotate-90'}">
 									<path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
 								</svg>
@@ -900,7 +921,7 @@
 							</div>
 						{/if}
 						{#if noCategoriesSelectedError && wordCategoriesOpen}
-							<p class="text-xs text-red-400 pt-2 px-1">Please select at least one category.</p>
+							<p class="text-xs text-red-400 pt-2 px-1">{(m as any)['error.no_categories']()}</p>
 						{/if}
 					</fieldset>
 				</div>
@@ -911,19 +932,19 @@
 						<!-- General Options -->
 						<fieldset class="min-w-[200px] flex-1 md:flex-grow-[2]">
 							<CustomTooltip text="General formatting options for the word-based passphrase." position="top">
-								<legend class="block text-sm font-medium text-gray-300 mb-2">Word Formatting</legend>
+								<legend class="block text-sm font-medium text-gray-300 mb-2">{(m as any)['settings.word_formatting']()}</legend>
 							</CustomTooltip>
 							<div class="grid grid-cols-1 gap-3">
 								<CustomTooltip text="Capitalize the first letter of each word. e.g., QuickBrownFox." position="top">
 									<label class="flex items-center gap-x-3 cursor-pointer">
 										<input type="checkbox" bind:checked={capitalize} class="custom-checkbox focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" style={`--checkmark-url: ${checkmarkDataUrl}`} />
-										<span class="text-sm text-gray-300 select-none hover:text-gray-100">Capitalize Words</span>
+										<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['words.capitalize']()}</span>
 									</label>
 								</CustomTooltip>
 								<CustomTooltip text="Automatically copy the generated passphrase to your clipboard." position="top">
 									<label class="flex items-center gap-x-3 cursor-pointer">
 										<input type="checkbox" bind:checked={autoCopy} class="custom-checkbox focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" style={`--checkmark-url: ${checkmarkDataUrl}`} />
-										<span class="text-sm text-gray-300 select-none hover:text-gray-100">Auto-copy new passphrase</span>
+										<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['words.auto_copy']()}</span>
 									</label>
 								</CustomTooltip>
 							</div>
@@ -931,9 +952,9 @@
 
 						<!-- Separator -->
 						<div class="flex-1 flex justify-center md:flex-grow-[1]">
-							<CustomTooltip text="Character(s) to place between words. Leave empty for no separator (words will be joined together). E.g., -, _, ., or space." position="top">
-								<div class="mt-4 md:mt-8 flex flex-col items-center">
-									<label for="separator" class="mb-1 block text-sm font-medium text-gray-300">Separator</label>
+															<CustomTooltip text="Character(s) to place between words. Leave empty for no separator (words will be joined together). E.g., -, _, ., or space." position="top">
+									<div class="mt-4 md:mt-8 flex flex-col items-center">
+										<label for="separator" class="mb-1 block text-sm font-medium text-gray-300">{(m as any)['words.separator']()}</label>
 									<input 
 										type="text" 
 										id="separator" 
@@ -960,7 +981,7 @@
 								aria-controls="word-numbers-symbols-content"
 								class="w-full flex justify-between items-center text-left text-sm font-medium mb-2 p-2 rounded-t-md bg-slate-800 hover:bg-slate-700 border-b border-slate-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800"
 							>
-								<span class="text-gray-200">Numbers & Symbols</span>
+								<span class="text-gray-200">{(m as any)['settings.numbers_symbols']()}</span>
 								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 transform transition-transform duration-200 text-gray-400 {numbersSymbolsOpen ? 'rotate-0' : '-rotate-90'}">
 									<path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
 								</svg>
@@ -971,7 +992,7 @@
 								<!-- Number of Digits Input -->
 								<CustomTooltip text="How many digits to include (0-5). 0 means no digits." position="top">
 									<div class="pl-0">
-										<label for="numDigitsWordInput" class="mb-1 block text-sm font-medium text-gray-300">Number of Digits (0-5): <span class="font-bold text-green-400">{numDigitsForWordMode}</span></label>
+										<label for="numDigitsWordInput" class="mb-1 block text-sm font-medium text-gray-300">{(m as any)['input.digits']({ count: numDigitsForWordMode })}</label>
 										<input type="number" id="numDigitsWordInput" bind:value={numDigits} min="0" max="5" class="block w-20 rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500" />
 									</div>
 								</CustomTooltip>
@@ -979,7 +1000,7 @@
 								<!-- Number of Symbols Input -->
 								<CustomTooltip text="How many symbols to include (0-5). 0 means no symbols." position="left">
 									<div class="pl-0 mt-3">
-										<label for="numSymbolsWordInput" class="mb-1 block text-sm font-medium text-gray-300">Number of Symbols (0-5): <span class="font-bold text-green-400">{numSymbolsForWordMode}</span></label>
+										<label for="numSymbolsWordInput" class="mb-1 block text-sm font-medium text-gray-300">{(m as any)['input.symbols']({ count: numSymbolsForWordMode })}</label>
 										<div class="flex items-center">
 											<input type="number" id="numSymbolsWordInput" bind:value={numSymbols} min="0" max="5" class="block w-20 rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500" />
 											{#if numSymbolsForWordMode > 0}
@@ -1289,7 +1310,7 @@
 				class="px-4 py-2 text-xs font-medium text-gray-400 hover:text-gray-100 border border-slate-600 rounded-md hover:border-slate-500 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800"
 				title="Reset all options to their original defaults"
 			>
-				Reset to Defaults
+				{(m as any)['action.reset_defaults']()}
 			</button>
 		</div>
 
@@ -1306,7 +1327,11 @@
 	<!-- Privacy/Security Notice -->
 	<div class="w-full text-center mt-2 mb-0">
 		<p class="text-xs text-slate-500">
-			{generationMode === 'words' ? 'Passphrases' : generationMode === 'pronounceable' ? 'Pronounceable passwords' : 'Passwords'} are generated entirely in your browser and are not stored or transmitted.
+			{generationMode === 'words' 
+				? (m as any)['privacy.notice_words']() 
+				: generationMode === 'pronounceable' 
+					? (m as any)['privacy.notice_pronounceable']() 
+					: (m as any)['privacy.notice_random']()}
 		</p>
 	</div>
 

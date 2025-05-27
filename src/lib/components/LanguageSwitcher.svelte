@@ -39,6 +39,23 @@
 		// Store preference
 		localStorage.setItem('preferred-language', newLang);
 		
+		// Announce language change to screen readers
+		if (typeof window !== 'undefined' && window.speechSynthesis) {
+			const announcement = `Language changed to ${languageData[newLang]?.name || newLang}`;
+			// Create a temporary announcement element
+			const announcement_element = document.createElement('div');
+			announcement_element.setAttribute('aria-live', 'assertive');
+			announcement_element.setAttribute('aria-atomic', 'true');
+			announcement_element.style.position = 'absolute';
+			announcement_element.style.left = '-10000px';
+			announcement_element.textContent = announcement;
+			document.body.appendChild(announcement_element);
+			
+			setTimeout(() => {
+				document.body.removeChild(announcement_element);
+			}, 1000);
+		}
+		
 		// Trigger re-render
 		invalidate('app:language');
 	}
