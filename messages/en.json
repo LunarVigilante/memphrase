@@ -1,4 +1,25 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "Hello, {name} from en!"
-}
+	"app.name": "MemPhrase",
+	"app.tagline": "Free Passphrase Generator",
+	"main.title": "MemPhrase",
+	"main.generate_button": "Generate Passphrase",
+	"main.generate_pronounceable": "Generate Pronounceable", 
+	"main.generate_password": "Generate Password",
+	"main.copy_button": "Copy",
+	"main.copied": "Copied!",
+	"main.previous_button": "Previous",
+	"mode.words": "Word-based (Memorable)",
+	"mode.pronounceable": "Pronounceable (Balanced)",
+	"mode.random": "Random Characters (Strong)",
+	"words.count": "Number of Words: {count}",
+	"words.separator": "Separator",
+	"words.capitalize": "Capitalize Words",
+	"words.auto_copy": "Auto-copy new passphrase",
+	"settings.word_categories": "Word Categories",
+	"settings.numbers_symbols": "Numbers & Symbols",
+	"action.reset_defaults": "Reset to Defaults",
+	"privacy.notice_words": "Passphrases are generated entirely in your browser and are not stored or transmitted.",
+	"privacy.notice_pronounceable": "Pronounceable passwords are generated entirely in your browser and are not stored or transmitted.",
+	"privacy.notice_random": "Passwords are generated entirely in your browser and are not stored or transmitted."
+} 

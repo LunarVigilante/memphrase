@@ -24,6 +24,8 @@
 		calculatePassphraseStrengthOptimized,
 		type OptimizedStrengthResult
 	} from '../lib/passwordUtilsOptimized';
+	// Import translation messages
+	import * as m from '$lib/paraglide/messages';
 
 	interface MemPhraseSettings {
 		numWords: number;
@@ -74,9 +76,9 @@
 
 	// Define generation mode options
 	const generationModeOptions = [
-		{ value: 'words', label: 'Word-based (Memorable)' },
-		{ value: 'pronounceable', label: 'Pronounceable (Balanced)' },
-		{ value: 'randomChars', label: 'Random Characters (Strong)' }
+		{ value: 'words', label: (m as any)['mode.words']() },
+		{ value: 'pronounceable', label: (m as any)['mode.pronounceable']() },
+		{ value: 'randomChars', label: (m as any)['mode.random']() }
 	];
 
 	// New state for generation mode
@@ -121,7 +123,7 @@
 	let isGenerating = false; // Loading state for generation
 	let useOptimizedGeneration = false; // Feature flag for optimized generation - disabled due to loading issues
 
-	let copyButtonText = 'Copy';
+	let copyButtonText = (m as any)['main.copy_button']();
 
 	// Calculate fill percentage for custom slider (new min 1, new max 7)
 	$: sliderFillPercent = numWords <= 1 ? 0 : ((numWords - 1) / (7 - 1)) * 100;

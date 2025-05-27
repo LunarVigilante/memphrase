@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
+	import LanguageSwitcher from './LanguageSwitcher.svelte';
 
 	let showPasswordTools = false;
 	let showSecurityTools = false;
@@ -165,12 +166,18 @@
 				</a>
 			</div>
 
-			<!-- Mobile Menu Button -->
-			<button class="md:hidden p-2 text-gray-300 hover:text-white" aria-label="Open mobile navigation menu">
-				<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-				</svg>
-			</button>
+			<!-- Right Side Actions -->
+			<div class="flex items-center gap-3">
+				<!-- Language Switcher -->
+				<LanguageSwitcher />
+				
+				<!-- Mobile Menu Button -->
+				<button class="md:hidden p-2 text-gray-300 hover:text-white" aria-label="Open mobile navigation menu">
+					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+					</svg>
+				</button>
+			</div>
 		</div>
 	</div>
 </nav> 
