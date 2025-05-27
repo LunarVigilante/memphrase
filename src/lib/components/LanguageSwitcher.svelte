@@ -2,6 +2,7 @@
 	import { locales, setLocale, getLocale } from '$lib/paraglide/runtime';
 	import { browser } from '$app/environment';
 	import { invalidate } from '$app/navigation';
+	import * as m from '$lib/paraglide/messages';
 
 	// Language metadata with proper names and RTL support
 	const languageData: Record<string, { name: string; nativeName: string; rtl: boolean; flag: string }> = {
@@ -96,8 +97,8 @@
 		class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-300 bg-slate-700 border border-slate-600 rounded-md hover:bg-slate-600 hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-slate-800 transition-colors duration-150"
 		aria-expanded={isOpen}
 		aria-haspopup="true"
-		aria-label="Select language"
-		title="Change language"
+		aria-label={(m as any)["aria.select_language"]()}
+		title={(m as any)["tooltip.change_language"]()}
 	>
 		<span class="text-base" aria-hidden="true">{currentLang.flag}</span>
 		<span class="hidden sm:inline" dir="ltr">{currentLang.nativeName}</span>

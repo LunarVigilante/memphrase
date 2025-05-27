@@ -602,8 +602,8 @@
 </script>
 
 <svelte:head>
-	<title>MemPhrase - Free Passphrase Generator</title>
-	<meta name="description" content="Generate strong, memorable passphrases with MemPhrase. Create secure passwords using word combinations, random characters, and customizable settings. Free, private, and runs entirely in your browser." />
+	<title>{(m as any)["page.main.title"]()}</title>
+	<meta name="description" content={(m as any)["page.main.description"]()} />
 </svelte:head>
 
 <style>
@@ -708,9 +708,9 @@
 >
 	<!-- Skip Navigation Links -->
 	<div class="sr-only focus-within:not-sr-only fixed top-0 left-0 z-50 p-2 bg-slate-900">
-		<a href="#passphrase-display" class="skip-link enhanced-focus bg-green-500 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 mr-2">Skip to passphrase</a>
-		<a href="#settings" class="skip-link enhanced-focus bg-green-500 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 mr-2">Skip to settings</a>
-		<a href="#generate-button" class="skip-link enhanced-focus bg-green-500 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400">Skip to generate button</a>
+		<a href="#passphrase-display" class="skip-link enhanced-focus bg-green-500 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 mr-2">{(m as any)["aria.skip_to_passphrase"]()}</a>
+		<a href="#settings" class="skip-link enhanced-focus bg-green-500 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400 mr-2">{(m as any)["aria.skip_to_settings"]()}</a>
+		<a href="#generate-button" class="skip-link enhanced-focus bg-green-500 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-green-400">{(m as any)["aria.skip_to_generate"]()}</a>
 	</div>
 
 	<div class="flex items-center justify-center">
@@ -729,7 +729,7 @@
 				role="status" 
 				aria-live="polite"
 				aria-atomic="true"
-				aria-label={noCategoriesSelectedError ? 'Error: Please select at least one word category' : `Generated passphrase: ${passphrase}`}
+				aria-label={noCategoriesSelectedError ? (m as any)["aria.error_no_categories"]() : (m as any)["aria.generated_passphrase"]({ passphrase })}
 				on:mouseenter={handleMouseEnterPassphrase}
 				on:mouseleave={handleMouseLeavePassphrase}
 				aria-describedby={showCustomTooltip ? "custom-passphrase-tooltip" : undefined}
@@ -738,7 +738,7 @@
 		<button
 			on:click={copyPassword}
 			class="button-gleam min-w-[70px] rounded-md px-3 py-1.5 text-sm font-medium text-white transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 disabled:opacity-60 dark:focus:ring-offset-slate-700 {copyButtonText === 'Copied!' ? 'bg-emerald-700' : 'bg-green-500 hover:bg-green-600'}"
-			aria-label="Copy passphrase"
+			aria-label={(m as any)["aria.copy_passphrase"]()}
 			disabled={copyButtonText === 'Copied!' || noCategoriesSelectedError}
 		>
 			{copyButtonText}

@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import LanguageSwitcher from './LanguageSwitcher.svelte';
+	import * as m from '$lib/paraglide/messages';
 
 	let showPasswordTools = false;
 	let showSecurityTools = false;
@@ -24,25 +25,25 @@
 
 	$: currentPath = $page.url.pathname;
 
-	const passwordTools = [
-		{ href: '/', label: 'Passphrase Generator', icon: '🎲' },
-		{ href: '/bulk-generator', label: 'Bulk Generator', icon: '📦' },
-		{ href: '/password-templates', label: 'Templates', icon: '📋' },
-		{ href: '/password-history', label: 'History', icon: '🕒' },
-		{ href: '/password-analyzer', label: 'Analyzer', icon: '🔍' }
+	$: passwordTools = [
+		{ href: '/', label: (m as any)["nav.passphrase_generator"](), icon: '🎲' },
+		{ href: '/bulk-generator', label: (m as any)["nav.bulk_generator"](), icon: '📦' },
+		{ href: '/password-templates', label: (m as any)["nav.password_templates"](), icon: '📋' },
+		{ href: '/password-history', label: (m as any)["nav.password_history"](), icon: '🕒' },
+		{ href: '/password-analyzer', label: (m as any)["nav.password_analyzer"](), icon: '🔍' }
 	];
 
-	const securityTools = [
-		{ href: '/secret-key-generator', label: 'Secret Keys', icon: '🔑' },
-		{ href: '/ssh-key-generator', label: 'SSH Keys', icon: '🔐' },
-		{ href: '/totp-generator', label: 'TOTP/2FA', icon: '🛡️' },
-		{ href: '/recovery-codes', label: 'Recovery Codes', icon: '🆘' }
+	$: securityTools = [
+		{ href: '/secret-key-generator', label: (m as any)["nav.secret_keys"](), icon: '🔑' },
+		{ href: '/ssh-key-generator', label: (m as any)["nav.ssh_keys"](), icon: '🔐' },
+		{ href: '/totp-generator', label: (m as any)["nav.totp_2fa"](), icon: '🛡️' },
+		{ href: '/recovery-codes', label: (m as any)["nav.recovery_codes"](), icon: '🆘' }
 	];
 
-	const utilities = [
-		{ href: '/uuid-generator', label: 'UUID Generator', icon: '🆔' },
-		{ href: '/checksum-generator', label: 'Checksums', icon: '✅' },
-		{ href: '/certificate-generator', label: 'Certificates', icon: '📜' }
+	$: utilities = [
+		{ href: '/uuid-generator', label: (m as any)["nav.uuid_generator"](), icon: '🆔' },
+		{ href: '/checksum-generator', label: (m as any)["nav.checksums"](), icon: '✅' },
+		{ href: '/certificate-generator', label: (m as any)["nav.certificates"](), icon: '📜' }
 	];
 
 	function isActive(href: string): boolean {
@@ -74,7 +75,7 @@
 						class="flex items-center gap-2 px-3 py-2 text-gray-300 hover:text-white transition-colors text-sm font-medium"
 						class:text-green-400={passwordTools.some(tool => isActive(tool.href))}
 					>
-						🎲 Password Tools
+						🎲 {(m as any)["nav.password_tools"]()}
 						<svg class="w-4 h-4 transform transition-transform" class:rotate-180={showPasswordTools} fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
 						</svg>
@@ -105,7 +106,7 @@
 						class="flex items-center gap-2 px-3 py-2 text-gray-300 hover:text-white transition-colors text-sm font-medium"
 						class:text-blue-400={securityTools.some(tool => isActive(tool.href))}
 					>
-						🛡️ Security Tools
+						🛡️ {(m as any)["nav.security_tools"]()}
 						<svg class="w-4 h-4 transform transition-transform" class:rotate-180={showSecurityTools} fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
 						</svg>
@@ -136,7 +137,7 @@
 						class="flex items-center gap-2 px-3 py-2 text-gray-300 hover:text-white transition-colors text-sm font-medium"
 						class:text-purple-400={utilities.some(tool => isActive(tool.href))}
 					>
-						⚡ Utilities
+						⚡ {(m as any)["nav.utilities"]()}
 						<svg class="w-4 h-4 transform transition-transform" class:rotate-180={showUtilities} fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
 						</svg>
@@ -162,7 +163,7 @@
 
 				<!-- Direct Links -->
 				<a href="/password-guide" class="px-3 py-2 text-gray-300 hover:text-white transition-colors text-sm font-medium">
-					📚 Guide
+					📚 {(m as any)["nav.guide"]()}
 				</a>
 			</div>
 
@@ -172,7 +173,7 @@
 				<LanguageSwitcher />
 				
 				<!-- Mobile Menu Button -->
-				<button class="md:hidden p-2 text-gray-300 hover:text-white" aria-label="Open mobile navigation menu">
+				<button class="md:hidden p-2 text-gray-300 hover:text-white" aria-label={(m as any)["aria.open_mobile_menu"]()}>
 					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
 					</svg>
