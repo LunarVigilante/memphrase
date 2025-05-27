@@ -5,6 +5,12 @@
 		<link rel="icon" href="%sveltekit.assets%/memphrase-logo.png" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		
+		<!-- Performance Optimizations -->
+		<link rel="preload" href="%sveltekit.assets%/memphrase-logo.png" as="image" />
+		<link rel="dns-prefetch" href="//fonts.googleapis.com" />
+		<link rel="preconnect" href="//fonts.gstatic.com" crossorigin />
+		<meta name="resource-hints" content="preload, preconnect" />
+		
 		<!-- PWA Meta Tags -->
 		<link rel="manifest" href="%sveltekit.assets%/manifest.json" />
 		<meta name="theme-color" content="#10b981" />

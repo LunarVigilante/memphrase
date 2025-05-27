@@ -26,6 +26,8 @@
 	} from '../lib/passwordUtilsOptimized';
 	// Import translation messages
 	import * as m from '$lib/paraglide/messages';
+	// Import performance optimizations
+	import { debounce, throttle, memoize, PerformanceMonitor } from '$lib/utils/performanceOptimizations';
 
 	interface MemPhraseSettings {
 		numWords: number;
@@ -140,11 +142,24 @@
 
 	$: noCategoriesSelectedError = selectedCategories.length === 0;
 
+	// Performance monitoring
+	const perfMonitor = new PerformanceMonitor();
+	
+	// Memoized calculation functions
+	const memoizedStrengthCalculation = memoize(calculatePassphraseStrength);
+	const memoizedPatternDescription = memoize(describeWordPattern);
+
 	// Reactive trigger for settings changes
 	$: settingsSignature = `${generationMode}-${numWords}-${separator}-${capitalize}-${numDigitsForWordMode}-${numSymbolsForWordMode}-${selectedCategories.join(',')}-${numSymPosition}-${autoCopy}-${charGrouping}-${randomPasswordLength}-${randomIncludeLowercase}-${randomIncludeUppercase}-${randomIncludeNumbers}-${randomIncludeSymbols}-${customSymbolsWordMode.join('')}-${customSymbolsRandomMode.join('')}-${pronounceableSyllables}-${pronounceableComplexity}`;
 
 	let initialSignature = '';
 	let initialSignatureCaptured = false;
+	
+	// Debounced functions for better performance
+	const debouncedGeneratePassphrase = debounce(generatePassphrase, 300);
+	const debouncedSaveSettings = debounce((settings: MemPhraseSettings) => {
+		localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+	}, 1000);
 
 	function handleMouseEnterPassphrase() {
 		if (passphrase && passphrase.length > 25) { // Only show if long enough
@@ -159,6 +174,8 @@
 
 	// Function to update the strength meter based on current passphrase and options
 	function updateStrengthDisplay() {
+		perfMonitor.mark('strength-calculation-start');
+		
 		const currentOpts: PassphraseOptions = {
 			generationMode,
 			// Word-based options
@@ -185,14 +202,18 @@
 		if (passphrase.startsWith('Error:') || passphrase.startsWith('Invalid Options')) {
 			passphraseStrength = { score: 0, label: '-', colorClass: 'text-red-400', entropy: 0 };
 		} else {
-			passphraseStrength = calculatePassphraseStrength(passphrase, currentOpts);
+			passphraseStrength = memoizedStrengthCalculation(passphrase, currentOpts);
 		}
+		
+		perfMonitor.mark('strength-calculation-end');
+		perfMonitor.measure('strength-calculation', 'strength-calculation-start', 'strength-calculation-end');
 	}
 
 	// Function to generate passphrase
 	async function generatePassphrase() {
 		if (!browser) return;
 		
+		perfMonitor.mark('generation-start');
 		isGenerating = true;
 		optimizedStrength = null;
 		
@@ -341,6 +362,9 @@
 			isGenerating = false;
 			// Explicitly update strength display after generation
 			updateStrengthDisplay();
+			
+			perfMonitor.mark('generation-end');
+			perfMonitor.measure('passphrase-generation', 'generation-start', 'generation-end');
 		}
 	}
 
@@ -371,7 +395,7 @@
 		}
 	}
 
-	// Save settings to localStorage when they change
+	// Save settings to localStorage when they change (debounced for performance)
 	$: if (appInitialized) {
 		const currentSettings: MemPhraseSettings = {
 			numWords,
@@ -400,7 +424,7 @@
 			pronounceableComplexity,
 			pronounceableOptionsOpen
 		};
-		localStorage.setItem(SETTINGS_KEY, JSON.stringify(currentSettings));
+		debouncedSaveSettings(currentSettings);
 	}
 
 	onMount(() => {
@@ -458,7 +482,7 @@
 
 	// Regenerate passphrase when options change (only after initialization and if signature actually changes)
 	$: if (settingsSignature && appInitialized && initialSignatureCaptured && settingsSignature !== initialSignature) {
-    	generatePassphrase();
+    	debouncedGeneratePassphrase();
 		initialSignature = settingsSignature; // Update signature to prevent re-trigger from this same generation
 	}
 
@@ -766,7 +790,7 @@
 		<div class="text-center mt-1 mb-2">
 			<CustomTooltip text="MemPhrase uses word patterns to make passphrases more memorable while maintaining security." position="top">
 				<p class="text-xs text-slate-400 italic">
-					Pattern: {describeWordPattern(numWords, selectedCategories)}
+					Pattern: {memoizedPatternDescription(numWords, selectedCategories)}
 				</p>
 			</CustomTooltip>
 		</div>

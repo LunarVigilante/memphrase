@@ -10,34 +10,42 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [
-		tailwindcss({
-			// Config object for Tailwind directly inside the Vite plugin
-			config: {
-				content: ['./src/**/*.{html,js,svelte,ts}'],
-				safelist: [
-					'bg-red-500',
-					'bg-orange-500',
-					'bg-yellow-500',
-					'bg-green-500',
-					'bg-emerald-500',
-				],
-				darkMode: 'class', // Ensure class strategy is used
-				theme: {
-					extend: {},
-				},
-				plugins: [
-					// Temporarily remove plugins
-					// forms,
-					// typography
-				]
-			}
-		}),
+		tailwindcss(),
 		sveltekit(),
 		paraglideVitePlugin({
 			project: './project.inlang',
 			outdir: './src/lib/paraglide'
 		})
 	],
+	build: {
+		// Performance optimizations
+		rollupOptions: {
+			output: {
+				manualChunks: {
+					// Split vendor libraries into separate chunks
+					vendor: ['svelte', '@sveltejs/kit'],
+					paraglide: ['$lib/paraglide/runtime', '$lib/paraglide/messages']
+				}
+			}
+		},
+		// Enable compression and minification
+		minify: 'esbuild',
+		cssMinify: true,
+		// Optimize chunk size
+		chunkSizeWarningLimit: 1000,
+		// Enable source maps for production debugging (optional)
+		sourcemap: false
+	},
+	optimizeDeps: {
+		// Pre-bundle heavy dependencies
+		include: ['svelte', '@sveltejs/kit']
+	},
+	server: {
+		// Development server optimizations
+		hmr: {
+			overlay: false // Disable error overlay for better performance
+		}
+	},
 	test: {
 		workspace: [
 			{
