@@ -11,6 +11,10 @@
 				<a href="/" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Passphrase Generator</a>
 				<a href="/secret-key-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Secret Key Generator</a>
 				<a href="/ssh-key-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">SSH Key Generator</a>
+				<a href="/totp-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">TOTP Generator</a>
+				<a href="/recovery-codes" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Recovery Codes</a>
+				<a href="/uuid-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">UUID Generator</a>
+				<a href="/checksum-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Checksum Generator</a>
 			</div>
 		</div>
 

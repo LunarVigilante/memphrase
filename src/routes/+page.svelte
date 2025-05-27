@@ -12,7 +12,6 @@
 	} from '../lib/passwordUtils';
 	import { categories as wordListCategories, defaultCategories as defaultLeafCategories, getCategoryByName, type WordCategory } from '$lib/words'; // Import categories
 	import SymbolSelectorModal from '$lib/components/SymbolSelectorModal.svelte'; // Import the modal
-	import PasswordStrengthMeter from '$lib/components/PasswordStrengthMeter.svelte';
 	import RadioGroup from '$lib/components/RadioGroup.svelte';
 	import { browser } from '$app/environment';
 	import AnimatedStrengthMeter from '$lib/components/AnimatedStrengthMeter.svelte';
@@ -307,6 +306,8 @@
 			passphrase = 'Error generating passphrase. Please try again.';
 		} finally {
 			isGenerating = false;
+			// Explicitly update strength display after generation
+			updateStrengthDisplay();
 		}
 	}
 
@@ -707,7 +708,11 @@
 			showAnimation={true}
 		/>
 	{:else}
-		<PasswordStrengthMeter strength={passphraseStrength} hasError={noCategoriesSelectedError} />
+		<AnimatedStrengthMeter 
+			strength={passphraseStrength} 
+			hasError={noCategoriesSelectedError}
+			showAnimation={true}
+		/>
 	{/if}
 
 	{#if generationMode === 'words' && !noCategoriesSelectedError && numWords > 0}
