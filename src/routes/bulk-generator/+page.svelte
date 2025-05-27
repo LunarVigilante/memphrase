@@ -242,10 +242,7 @@
 			<h3 class="text-lg font-medium text-green-400 mb-4">Generation Method</h3>
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 				<label 
-					class="flex items-center gap-3 cursor-pointer p-4 border rounded-lg hover:border-slate-500 transition-colors"
-					class:border-green-500={generationMode === 'words'}
-					class:bg-green-900/20={generationMode === 'words'}
-					class:border-slate-600={generationMode !== 'words'}
+					class="flex items-center gap-3 cursor-pointer p-4 border rounded-lg hover:border-slate-500 transition-colors {generationMode === 'words' ? 'border-green-500 bg-green-900 bg-opacity-20' : 'border-slate-600'}"
 				>
 					<input type="radio" bind:group={generationMode} value="words" class="text-green-500 focus:ring-green-500" />
 					<div>
@@ -254,10 +251,7 @@
 					</div>
 				</label>
 				<label 
-					class="flex items-center gap-3 cursor-pointer p-4 border rounded-lg hover:border-slate-500 transition-colors"
-					class:border-green-500={generationMode === 'randomChars'}
-					class:bg-green-900/20={generationMode === 'randomChars'}
-					class:border-slate-600={generationMode !== 'randomChars'}
+					class="flex items-center gap-3 cursor-pointer p-4 border rounded-lg hover:border-slate-500 transition-colors {generationMode === 'randomChars' ? 'border-green-500 bg-green-900 bg-opacity-20' : 'border-slate-600'}"
 				>
 					<input type="radio" bind:group={generationMode} value="randomChars" class="text-green-500 focus:ring-green-500" />
 					<div>
