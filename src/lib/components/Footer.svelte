@@ -9,6 +9,7 @@
 			<h3 class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">Tools</h3>
 			<div class="space-y-2">
 				<a href="/" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Passphrase Generator</a>
+				<a href="/bulk-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Bulk Generator</a>
 				<a href="/secret-key-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Secret Key Generator</a>
 				<a href="/ssh-key-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">SSH Key Generator</a>
 				<a href="/totp-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">TOTP Generator</a>

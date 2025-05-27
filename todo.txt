@@ -29,7 +29,7 @@
 - [x] Digital Certificate Generator (self-signed certificates)
 
 ### Advanced Password Features (Priority 1)
-- [ ] Bulk password generation (10-100 passwords at once)
+- [x] Bulk password generation (10-100 passwords at once)
 - [ ] Password templates/profiles system
 - [ ] Password history (last 20 generated, local storage only)
 - [ ] Password strength analyzer for existing passwords
