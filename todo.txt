@@ -26,7 +26,7 @@
 - [x] Recovery Codes Generator (8-16 backup codes)
 - [x] UUID/GUID Generator (v4 random, v7 timestamp)
 - [x] Checksum Generator (MD5, SHA256, SHA512)
-- [ ] Digital Certificate Generator (self-signed certificates)
+- [x] Digital Certificate Generator (self-signed certificates)
 
 ### Advanced Password Features (Priority 1)
 - [ ] Bulk password generation (10-100 passwords at once)

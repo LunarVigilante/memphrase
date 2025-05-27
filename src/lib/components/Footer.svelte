@@ -15,6 +15,7 @@
 				<a href="/recovery-codes" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Recovery Codes</a>
 				<a href="/uuid-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">UUID Generator</a>
 				<a href="/checksum-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Checksum Generator</a>
+				<a href="/certificate-generator" class="block text-sm text-slate-400 hover:text-slate-200 transition-colors">Certificate Generator</a>
 			</div>
 		</div>
 
