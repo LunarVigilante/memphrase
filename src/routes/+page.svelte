@@ -30,6 +30,8 @@
 	import { debounce, throttle, memoize, PerformanceMonitor } from '$lib/utils/performanceOptimizations';
 	// Import accessibility utilities
 	import { accessibilityManager, ScreenReaderUtils, MotionUtils } from '$lib/utils/accessibilityUtils';
+	// Import history functionality
+	import { addToHistory } from './password-history/+page.svelte';
 
 	interface MemPhraseSettings {
 		numWords: number;
@@ -366,6 +368,11 @@
 			isGenerating = false;
 			// Explicitly update strength display after generation
 			updateStrengthDisplay();
+			
+			// Add to password history if it's a valid passphrase
+			if (passphrase && !passphrase.startsWith('Error:') && !passphrase.startsWith('Please select')) {
+				addToHistory(passphrase, generationMode);
+			}
 			
 			// Announce new passphrase to screen readers
 			if (passphrase && !passphrase.startsWith('Error:')) {

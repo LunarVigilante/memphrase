@@ -1,45 +1,21 @@
-<script lang="ts">
+<script lang="ts" context="module">
 	import { browser } from '$app/environment';
-	import { onMount } from 'svelte';
-	import CustomTooltip from '$lib/components/CustomTooltip.svelte';
-	import Footer from '$lib/components/Footer.svelte';
-	import AnimatedStrengthMeter from '$lib/components/AnimatedStrengthMeter.svelte';
-	import { calculatePassphraseStrength, type PassphraseStrengthResult } from '$lib/passwordUtils';
+	import { calculatePassphraseStrength } from '$lib/passwordUtils';
 
+	// Define constants needed by the module
+	const STORAGE_KEY = 'memphrase-password-history';
+	const MAX_HISTORY_SIZE = 20;
+
+	// Define the HistoryEntry interface for use in the module
 	interface HistoryEntry {
 		id: string;
 		password: string;
 		timestamp: string;
-		strength: PassphraseStrengthResult;
-		source: string; // 'generator', 'template', 'bulk', etc.
+		strength: any; // Using any here since we don't need to import the full type
+		source: string; 
 	}
 
-	let history: HistoryEntry[] = [];
-	let isLoading = true;
-	let searchTerm = '';
-	let sortBy: 'newest' | 'oldest' | 'strongest' | 'weakest' = 'newest';
-
-	const STORAGE_KEY = 'memphrase-password-history';
-	const MAX_HISTORY_SIZE = 20;
-
-	// Load history from localStorage
-	function loadHistory() {
-		if (!browser) return;
-		
-		try {
-			const stored = localStorage.getItem(STORAGE_KEY);
-			if (stored) {
-				history = JSON.parse(stored);
-			}
-		} catch (error) {
-			console.error('Failed to load password history:', error);
-			history = [];
-		} finally {
-			isLoading = false;
-		}
-	}
-
-	// Add password to history (this will be called from other pages)
+	// Export the addToHistory function so it can be imported by other components
 	export function addToHistory(password: string, source: string = 'generator') {
 		if (!browser || !password.trim()) return;
 
@@ -61,6 +37,18 @@
 			source
 		};
 
+		// Load existing history
+		let history: HistoryEntry[] = [];
+		try {
+			const stored = localStorage.getItem(STORAGE_KEY);
+			if (stored) {
+				history = JSON.parse(stored);
+			}
+		} catch (error) {
+			console.error('Failed to load password history:', error);
+			history = [];
+		}
+
 		// Add to beginning of array and limit size
 		history = [entry, ...history.slice(0, MAX_HISTORY_SIZE - 1)];
 		
@@ -69,6 +57,47 @@
 			localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
 		} catch (error) {
 			console.error('Failed to save password history:', error);
+		}
+	}
+</script>
+
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import CustomTooltip from '$lib/components/CustomTooltip.svelte';
+	import Footer from '$lib/components/Footer.svelte';
+	import AnimatedStrengthMeter from '$lib/components/AnimatedStrengthMeter.svelte';
+	import { type PassphraseStrengthResult } from '$lib/passwordUtils';
+
+	interface HistoryEntry {
+		id: string;
+		password: string;
+		timestamp: string;
+		strength: PassphraseStrengthResult;
+		source: string; // 'generator', 'template', 'bulk', etc.
+	}
+
+	let history: HistoryEntry[] = [];
+	let isLoading = true;
+	let searchTerm = '';
+	let sortBy: 'newest' | 'oldest' | 'strongest' | 'weakest' = 'newest';
+
+	// Use the same constants defined in the module
+	// No need to redefine STORAGE_KEY and MAX_HISTORY_SIZE since they're defined in the module
+
+	// Load history from localStorage
+	function loadHistory() {
+		if (!browser) return;
+		
+		try {
+			const stored = localStorage.getItem(STORAGE_KEY);
+			if (stored) {
+				history = JSON.parse(stored);
+			}
+		} catch (error) {
+			console.error('Failed to load password history:', error);
+			history = [];
+		} finally {
+			isLoading = false;
 		}
 	}
 
