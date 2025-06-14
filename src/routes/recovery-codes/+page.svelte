@@ -188,7 +188,7 @@
 	<meta name="description" content="Generate secure backup recovery codes for account protection. Create one-time use codes for account recovery when 2FA devices are lost or unavailable." />
 </svelte:head>
 
-<main class="container mx-auto mt-1 flex max-w-2xl flex-col items-center gap-6 p-4 md:mt-3 md:p-6">
+<main class="container mx-auto mt-1 flex max-w-4xl flex-col items-center gap-6 p-4 md:mt-3 md:p-6">
 	<div class="flex items-center justify-center">
 		<img src="/memphrase-logo.png" alt="MemPhrase Logo" class="h-12 w-12 md:h-16 md:w-16 mr-2" loading="lazy" />
 		<h1 class="text-center text-4xl font-bold text-gray-100 md:text-5xl [text-shadow:_2px_2px_5px_rgb(0_0_0_/_0.6)]">

@@ -737,7 +737,7 @@
 </style>
 
 <main
-	class="container mx-auto mt-1 flex max-w-2xl flex-col items-center gap-4 p-4 md:mt-3 md:p-6"
+	class="container mx-auto mt-1 flex max-w-4xl flex-col items-center gap-4 p-4 md:mt-3 md:p-6"
 >
 	<!-- Skip Navigation Links -->
 	<div class="sr-only focus-within:not-sr-only fixed top-0 left-0 z-50 p-2 bg-slate-900">
