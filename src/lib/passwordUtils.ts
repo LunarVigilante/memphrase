@@ -796,38 +796,70 @@ export function calculatePassphraseStrength(
 }
 
 // Function to describe the word pattern being used for user education
-export function describeWordPattern(numWords: number, selectedCategories: string[]): string {
+export function describeWordPattern(numWords: number, selectedCategories: string[], t?: any): string {
 	const adjectives = getWordsFromSelectedByType('Adjectives', selectedCategories);
 	const nouns = getWordsFromSelectedByType('Nouns', selectedCategories);
 	const verbs = getWordsFromSelectedByType('Verbs', selectedCategories);
 	
 	if (selectedCategories.length === 0) return '';
 	
+	// If translation function is not provided, return fallback
+	if (!t) {
+		switch (numWords) {
+			case 1:
+				if (nouns.length > 0) return 'Single descriptive word';
+				return 'Single word';
+			case 2:
+				if (adjectives.length > 0 && nouns.length > 0) {
+					return 'Adjective + Noun (e.g., "RedCar")';
+				}
+				return 'Two related words';
+			case 3:
+				if (adjectives.length >= 2 && nouns.length > 0) {
+					return 'Adjective + Adjective + Noun (e.g., "BigRedCar")';
+				} else if (adjectives.length > 0 && nouns.length > 0 && verbs.length > 0) {
+					return 'Adjective + Noun + Verb (e.g., "BigDogRuns")';
+				}
+				return 'Three related words';
+			case 4:
+				if (adjectives.length >= 2 && nouns.length > 0 && verbs.length > 0) {
+					return 'Adjective + Adjective + Noun + Verb';
+				}
+				return 'Four diverse words';
+			default:
+				if (numWords >= 5) {
+					return `${numWords} words in logical patterns`;
+				}
+				return `${numWords} words`;
+		}
+	}
+	
+	// Use translations
 	switch (numWords) {
 		case 1:
-			if (nouns.length > 0) return 'Single descriptive word';
-			return 'Single word';
+			if (nouns.length > 0) return t['pattern.single_word']();
+			return t['pattern.single_word_fallback']();
 		case 2:
 			if (adjectives.length > 0 && nouns.length > 0) {
-				return 'Adjective + Noun (e.g., "RedCar")';
+				return t['pattern.adjective_noun']();
 			}
-			return 'Two related words';
+			return t['pattern.two_words']();
 		case 3:
 			if (adjectives.length >= 2 && nouns.length > 0) {
-				return 'Adjective + Adjective + Noun (e.g., "BigRedCar")';
+				return t['pattern.adjective_adjective_noun']();
 			} else if (adjectives.length > 0 && nouns.length > 0 && verbs.length > 0) {
-				return 'Adjective + Noun + Verb (e.g., "BigDogRuns")';
+				return t['pattern.adjective_noun_verb']();
 			}
-			return 'Three related words';
+			return t['pattern.three_words']();
 		case 4:
 			if (adjectives.length >= 2 && nouns.length > 0 && verbs.length > 0) {
-				return 'Adjective + Adjective + Noun + Verb';
+				return t['pattern.adjective_adjective_noun_verb']();
 			}
-			return 'Four diverse words';
+			return t['pattern.four_words']();
 		default:
 			if (numWords >= 5) {
-				return `${numWords} words in logical patterns`;
+				return t['pattern.multiple_words']({ count: numWords });
 			}
-			return `${numWords} words`;
+			return t['pattern.fallback']({ count: numWords });
 	}
 } 

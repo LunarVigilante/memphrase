@@ -4,6 +4,7 @@
 	import Footer from '$lib/components/Footer.svelte';
 	import LoadingIndicator from '$lib/components/LoadingIndicator.svelte';
 	import SymbolSelectorModal from '$lib/components/SymbolSelectorModal.svelte';
+	import * as m from '$lib/paraglide/messages';
 	import {
 		generatePassphraseService,
 		type PassphraseOptions,
@@ -214,41 +215,71 @@
 		score: results.reduce((sum, r) => sum + r.strength.score, 0) / results.length,
 		entropy: results.reduce((sum, r) => sum + r.strength.entropy, 0) / results.length
 	} : null;
+
+	// Function to translate category names
+	function translateCategoryName(categoryName: string): string {
+		const categoryMap: { [key: string]: string } = {
+			'Adjectives': 'category.adjectives',
+			'Nouns': 'category.nouns', 
+			'Verbs': 'category.verbs',
+			'General Adjectives': 'category.general_adjectives',
+			'Colors': 'category.colors',
+			'Qualities/Traits': 'category.qualities_traits',
+			'Sizes/Shapes': 'category.sizes_shapes',
+			'Emotions': 'category.emotions',
+			'Animals': 'category.animals',
+			'Common Objects': 'category.common_objects',
+			'Foods': 'category.foods',
+			'Places': 'category.places',
+			'Concepts/Ideas': 'category.concepts_ideas',
+			'Technology': 'category.technology',
+			'Nature': 'category.nature',
+			'Occupations': 'category.occupations',
+			'Transportation': 'category.transportation',
+			'Action Verbs': 'category.action_verbs',
+			'State Verbs': 'category.state_verbs'
+		};
+		
+		const translationKey = categoryMap[categoryName];
+		if (translationKey) {
+			return (m as any)[translationKey]();
+		}
+		return categoryName; // Fallback to original name if no translation found
+	}
 </script>
 
 <svelte:head>
-	<title>Bulk Passphrase Generator - MemPhrase</title>
-	<meta name="description" content="Generate multiple secure passphrases at once. Create 10-100 passphrases in bulk with full customization options." />
+	<title>{(m as any)['seo.bulk.title']()}</title>
+	<meta name="description" content="{(m as any)['seo.bulk.description']()}" />
 </svelte:head>
 
 <main class="container mx-auto mt-1 flex max-w-4xl flex-col items-center gap-6 p-4 md:mt-3 md:p-6">
 	<div class="flex items-center justify-center">
 		<img src="/memphrase-logo.png" alt="MemPhrase Logo" class="h-12 w-12 md:h-16 md:w-16 mr-2" loading="lazy" />
 		<h1 class="text-center text-4xl font-bold text-gray-100 md:text-5xl [text-shadow:_2px_2px_5px_rgb(0_0_0_/_0.6)]">
-			Bulk Generator
+			{(m as any)['nav.bulk_generator']()}
 		</h1>
 	</div>
 
 	<p class="text-center text-gray-300 max-w-3xl">
-		Generate multiple secure passphrases at once with full customization. Choose between memorable word-based 
-		passphrases or strong random character passwords. Perfect for creating unique passwords for multiple accounts.
+		{(m as any)['text.bulk_description_full']()}
 	</p>
 
 	<!-- Configuration -->
 	<section class="w-full rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-2xl">
-		<h2 class="text-xl font-semibold text-gray-100 mb-6">Configuration</h2>
+		<h2 class="text-xl font-semibold text-gray-100 mb-6">{(m as any)['page.bulk.configuration']()}</h2>
 		
 		<!-- Generation Mode Selection -->
 		<div class="mb-6">
-			<h3 class="text-lg font-medium text-green-400 mb-4">Generation Method</h3>
+			<h3 class="text-lg font-medium text-green-400 mb-4">{(m as any)['page.bulk.generation_method']()}</h3>
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
 				<label 
 					class="flex items-center gap-3 cursor-pointer p-4 border rounded-lg hover:border-slate-500 transition-colors {generationMode === 'words' ? 'border-green-500 bg-green-900 bg-opacity-20' : 'border-slate-600'}"
 				>
 					<input type="radio" bind:group={generationMode} value="words" class="text-green-500 focus:ring-green-500" />
 					<div>
-						<div class="text-sm font-medium text-gray-200">Word-based (Memorable)</div>
-						<div class="text-xs text-gray-400">Easy to remember passphrases using real words</div>
+						<div class="text-sm font-medium text-gray-200">{(m as any)['page.bulk.word_based_memorable']()}</div>
+						<div class="text-xs text-gray-400">{(m as any)['page.bulk.word_based_desc']()}</div>
 					</div>
 				</label>
 				<label 
@@ -256,8 +287,8 @@
 				>
 					<input type="radio" bind:group={generationMode} value="randomChars" class="text-green-500 focus:ring-green-500" />
 					<div>
-						<div class="text-sm font-medium text-gray-200">Random Characters (Strong)</div>
-						<div class="text-xs text-gray-400">Maximum security with random character combinations</div>
+						<div class="text-sm font-medium text-gray-200">{(m as any)['page.bulk.random_chars_strong']()}</div>
+						<div class="text-xs text-gray-400">{(m as any)['page.bulk.random_chars_desc']()}</div>
 					</div>
 				</label>
 			</div>
@@ -266,12 +297,12 @@
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 			<!-- Basic Settings -->
 			<div class="space-y-4">
-				<h3 class="text-lg font-medium text-green-400 mb-4">Generation Settings</h3>
+				<h3 class="text-lg font-medium text-green-400 mb-4">{(m as any)['page.bulk.generation_settings']()}</h3>
 				
 				<div>
-					<CustomTooltip text="Number of passphrases to generate (10-100)" position="top">
+					<CustomTooltip text="{(m as any)['tooltip.bulk_quantity']()}" position="top">
 						<label for="quantity" class="block text-sm font-medium text-gray-300 mb-2">
-							Quantity ({minQuantity}-{maxQuantity})
+							{(m as any)['page.bulk.quantity_range']({ min: minQuantity, max: maxQuantity })}
 						</label>
 					</CustomTooltip>
 					<input 
@@ -283,7 +314,7 @@
 						class="block w-full rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500"
 					/>
 					{#if !quantityValid}
-						<p class="text-red-400 text-xs mt-1">Quantity must be between {minQuantity} and {maxQuantity}</p>
+						<p class="text-red-400 text-xs mt-1">{(m as any)['page.bulk.quantity_error']({ min: minQuantity, max: maxQuantity })}</p>
 					{/if}
 				</div>
 
@@ -291,34 +322,34 @@
 					<!-- Word-based Options -->
 					<div class="grid grid-cols-2 gap-3">
 						<div>
-							<CustomTooltip text="Number of words per passphrase" position="top">
-								<label for="numWords" class="block text-sm font-medium text-gray-300 mb-2">Word Count</label>
+							<CustomTooltip text="{(m as any)['tooltip.bulk_word_count']()}" position="top">
+								<label for="numWords" class="block text-sm font-medium text-gray-300 mb-2">{(m as any)['page.bulk.word_count']()}</label>
 							</CustomTooltip>
 							<select 
 								id="numWords"
 								bind:value={numWords}
 								class="block w-full rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500"
 							>
-								<option value={3}>3 words</option>
-								<option value={4}>4 words</option>
-								<option value={5}>5 words</option>
-								<option value={6}>6 words</option>
+								<option value={3}>{(m as any)['page.bulk.words_3']()}</option>
+								<option value={4}>{(m as any)['page.bulk.words_4']()}</option>
+								<option value={5}>{(m as any)['page.bulk.words_5']()}</option>
+								<option value={6}>{(m as any)['page.bulk.words_6']()}</option>
 							</select>
 						</div>
 						<div>
-							<CustomTooltip text="Character used to separate words" position="top">
-								<label for="separator" class="block text-sm font-medium text-gray-300 mb-2">Separator</label>
+							<CustomTooltip text="{(m as any)['tooltip.bulk_separator']()}" position="top">
+								<label for="separator" class="block text-sm font-medium text-gray-300 mb-2">{(m as any)['page.bulk.separator']()}</label>
 							</CustomTooltip>
 							<select 
 								id="separator"
 								bind:value={separator}
 								class="block w-full rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500"
 							>
-								<option value="-">Hyphen (-)</option>
-								<option value="_">Underscore (_)</option>
-								<option value=".">Period (.)</option>
-								<option value=" ">Space ( )</option>
-								<option value="">No separator</option>
+								<option value="-">{(m as any)['page.bulk.separator_hyphen']()}</option>
+								<option value="_">{(m as any)['page.bulk.separator_underscore']()}</option>
+								<option value=".">{(m as any)['page.bulk.separator_period']()}</option>
+								<option value=" ">{(m as any)['page.bulk.separator_space']()}</option>
+								<option value="">{(m as any)['page.bulk.separator_none']()}</option>
 							</select>
 						</div>
 					</div>
@@ -326,16 +357,16 @@
 					<label class="flex items-center gap-3 cursor-pointer">
 						<input type="checkbox" bind:checked={capitalize} class="rounded text-green-500 focus:ring-green-500" />
 						<div>
-							<span class="text-sm text-gray-200">Capitalize Words</span>
-							<div class="text-xs text-gray-400">First letter of each word uppercase</div>
+							<span class="text-sm text-gray-200">{(m as any)['page.bulk.capitalize_words']()}</span>
+							<div class="text-xs text-gray-400">{(m as any)['page.bulk.capitalize_desc']()}</div>
 						</div>
 					</label>
 				{:else}
 					<!-- Random Character Options -->
 					<div>
-						<CustomTooltip text="Length of generated passwords (8-128)" position="top">
+						<CustomTooltip text="{(m as any)['tooltip.bulk_password_length']()}" position="top">
 							<label for="randomLength" class="block text-sm font-medium text-gray-300 mb-2">
-								Password Length: {randomPasswordLength}
+								{(m as any)['page.bulk.password_length_range']({ length: randomPasswordLength })}
 							</label>
 						</CustomTooltip>
 						<input 
@@ -351,31 +382,31 @@
 					<div class="grid grid-cols-2 gap-3">
 						<label class="flex items-center gap-2 cursor-pointer">
 							<input type="checkbox" bind:checked={randomIncludeLowercase} class="rounded text-green-500 focus:ring-green-500" />
-							<span class="text-sm text-gray-200">Lowercase (a-z)</span>
+							<span class="text-sm text-gray-200">{(m as any)['page.bulk.lowercase']()}</span>
 						</label>
 						<label class="flex items-center gap-2 cursor-pointer">
 							<input type="checkbox" bind:checked={randomIncludeUppercase} class="rounded text-green-500 focus:ring-green-500" />
-							<span class="text-sm text-gray-200">Uppercase (A-Z)</span>
+							<span class="text-sm text-gray-200">{(m as any)['page.bulk.uppercase']()}</span>
 						</label>
 						<label class="flex items-center gap-2 cursor-pointer">
 							<input type="checkbox" bind:checked={randomIncludeNumbers} class="rounded text-green-500 focus:ring-green-500" />
-							<span class="text-sm text-gray-200">Numbers (0-9)</span>
+							<span class="text-sm text-gray-200">{(m as any)['page.bulk.numbers']()}</span>
 						</label>
 						<label class="flex items-center gap-2 cursor-pointer">
 							<input type="checkbox" bind:checked={randomIncludeSymbols} class="rounded text-green-500 focus:ring-green-500" />
-							<span class="text-sm text-gray-200">Symbols</span>
+							<span class="text-sm text-gray-200">{(m as any)['page.bulk.symbols']()}</span>
 						</label>
 					</div>
 
 					{#if randomIncludeSymbols}
 						<div class="flex items-center gap-2">
-							<span class="text-sm text-gray-300">Custom Symbols:</span>
+							<span class="text-sm text-gray-300">{(m as any)['page.bulk.custom_symbols']()}</span>
 							<button
 								on:click={() => openSymbolModal('randomChars')}
 								class="px-3 py-1 text-xs border border-slate-500 bg-slate-700 text-gray-200 rounded hover:bg-slate-600 transition"
 								aria-label="Customize symbols for random character mode"
 							>
-								⚙️ Customize ({customSymbolsRandomMode.length})
+								{(m as any)['page.bulk.customize_symbols']({ count: customSymbolsRandomMode.length })}
 							</button>
 							<span class="text-xs text-gray-400">{customSymbolsRandomMode.join('')}</span>
 						</div>
@@ -388,13 +419,13 @@
 				{#if generationMode === 'words'}
 					<!-- Word Categories -->
 					<div>
-						<h3 class="text-lg font-medium text-green-400 mb-4">Word Categories</h3>
+						<h3 class="text-lg font-medium text-green-400 mb-4">{(m as any)['page.bulk.word_categories']()}</h3>
 						
 						<div class="max-h-48 overflow-y-auto border border-slate-600 rounded p-3 bg-slate-700/30">
 							{#each wordListCategories as parentCategory}
 								{#if parentCategory.subCategories}
 									<div class="mb-3">
-										<h4 class="text-sm font-medium text-gray-300 mb-2">{parentCategory.name}</h4>
+										<h4 class="text-sm font-medium text-gray-300 mb-2">{translateCategoryName(parentCategory.name)}</h4>
 										<div class="grid grid-cols-2 gap-2 ml-2">
 											{#each parentCategory.subCategories as subCategory}
 												<label class="flex items-center gap-2 cursor-pointer text-xs">
@@ -404,7 +435,7 @@
 														value={subCategory.name}
 														class="rounded text-green-500 focus:ring-green-500" 
 													/>
-													<span class="text-gray-200">{subCategory.name}</span>
+													<span class="text-gray-200">{translateCategoryName(subCategory.name)}</span>
 												</label>
 											{/each}
 										</div>
@@ -414,7 +445,7 @@
 						</div>
 
 						{#if selectedCategories.length === 0}
-							<p class="text-red-400 text-xs">Please select at least one word category</p>
+							<p class="text-red-400 text-xs">{(m as any)['error.no_categories']()}</p>
 						{/if}
 					</div>
 
@@ -425,7 +456,7 @@
 							class="w-full flex items-center justify-between p-3 text-left hover:bg-slate-700/30 transition-colors"
 							aria-label="Toggle numbers and symbols options"
 						>
-							<span class="text-md font-medium text-green-400">Numbers & Symbols</span>
+							<span class="text-md font-medium text-green-400">{(m as any)['page.bulk.numbers_symbols']()}</span>
 							<svg class="w-4 h-4 text-gray-400 transform transition-transform" class:rotate-180={numbersSymbolsOpen} fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
 							</svg>
@@ -435,50 +466,50 @@
 							<div class="p-3 border-t border-slate-600 space-y-4">
 								<div class="grid grid-cols-2 gap-3">
 									<div>
-										<CustomTooltip text="Number of digits to add" position="top">
-											<label for="numDigits" class="block text-sm font-medium text-gray-300 mb-2">Numbers</label>
+										<CustomTooltip text="{(m as any)['tooltip.bulk_digits']()}" position="top">
+											<label for="numDigits" class="block text-sm font-medium text-gray-300 mb-2">{(m as any)['page.bulk.numbers']()}</label>
 										</CustomTooltip>
 										<select 
 											id="numDigits"
 											bind:value={numDigits}
 											class="block w-full rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500"
 										>
-											<option value={0}>None</option>
-											<option value={1}>1 number</option>
-											<option value={2}>2 numbers</option>
-											<option value={3}>3 numbers</option>
-											<option value={4}>4 numbers</option>
-											<option value={5}>5 numbers</option>
+											<option value={0}>{(m as any)['page.bulk.none']()}</option>
+											<option value={1}>{(m as any)['page.bulk.number_count']({ count: 1 })}</option>
+											<option value={2}>{(m as any)['page.bulk.number_count_plural']({ count: 2 })}</option>
+											<option value={3}>{(m as any)['page.bulk.number_count_plural']({ count: 3 })}</option>
+											<option value={4}>{(m as any)['page.bulk.number_count_plural']({ count: 4 })}</option>
+											<option value={5}>{(m as any)['page.bulk.number_count_plural']({ count: 5 })}</option>
 										</select>
 									</div>
 									<div>
-										<CustomTooltip text="Number of symbols to add" position="top">
-											<label for="numSymbols" class="block text-sm font-medium text-gray-300 mb-2">Symbols</label>
+										<CustomTooltip text="{(m as any)['tooltip.bulk_symbols']()}" position="top">
+											<label for="numSymbols" class="block text-sm font-medium text-gray-300 mb-2">{(m as any)['page.bulk.symbols']()}</label>
 										</CustomTooltip>
 										<select 
 											id="numSymbols"
 											bind:value={numSymbols}
 											class="block w-full rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500"
 										>
-											<option value={0}>None</option>
-											<option value={1}>1 symbol</option>
-											<option value={2}>2 symbols</option>
-											<option value={3}>3 symbols</option>
-											<option value={4}>4 symbols</option>
-											<option value={5}>5 symbols</option>
+											<option value={0}>{(m as any)['page.bulk.none']()}</option>
+											<option value={1}>{(m as any)['page.bulk.symbol_count']({ count: 1 })}</option>
+											<option value={2}>{(m as any)['page.bulk.symbol_count_plural']({ count: 2 })}</option>
+											<option value={3}>{(m as any)['page.bulk.symbol_count_plural']({ count: 3 })}</option>
+											<option value={4}>{(m as any)['page.bulk.symbol_count_plural']({ count: 4 })}</option>
+											<option value={5}>{(m as any)['page.bulk.symbol_count_plural']({ count: 5 })}</option>
 										</select>
 									</div>
 								</div>
 
 								{#if numSymbols > 0}
 									<div class="flex items-center gap-2">
-										<span class="text-sm text-gray-300">Custom Symbols:</span>
+										<span class="text-sm text-gray-300">{(m as any)['page.bulk.custom_symbols']()}</span>
 										<button
 											on:click={() => openSymbolModal('words')}
 											class="px-3 py-1 text-xs border border-slate-500 bg-slate-700 text-gray-200 rounded hover:bg-slate-600 transition"
 											aria-label="Customize symbols for word mode"
 										>
-											⚙️ Customize ({customSymbolsWordMode.length})
+											{(m as any)['page.bulk.customize_symbols']({ count: customSymbolsWordMode.length })}
 										</button>
 										<span class="text-xs text-gray-400">{customSymbolsWordMode.join('')}</span>
 									</div>
@@ -487,33 +518,33 @@
 								{#if numDigits > 0 || numSymbols > 0}
 									<div class="space-y-3">
 										<div>
-											<span class="text-sm font-medium text-gray-300 mb-2 block">Position</span>
+											<span class="text-sm font-medium text-gray-300 mb-2 block">{(m as any)['page.bulk.position']()}</span>
 											<div class="grid grid-cols-3 gap-2">
 												<label class="flex items-center gap-2 cursor-pointer text-xs">
 													<input type="radio" bind:group={numSymPosition} value="prepend" class="text-green-500 focus:ring-green-500" />
-													<span class="text-gray-200">Before words</span>
+													<span class="text-gray-200">{(m as any)['page.bulk.before_words']()}</span>
 												</label>
 												<label class="flex items-center gap-2 cursor-pointer text-xs">
 													<input type="radio" bind:group={numSymPosition} value="append" class="text-green-500 focus:ring-green-500" />
-													<span class="text-gray-200">After words</span>
+													<span class="text-gray-200">{(m as any)['page.bulk.after_words']()}</span>
 												</label>
 												<label class="flex items-center gap-2 cursor-pointer text-xs">
 													<input type="radio" bind:group={numSymPosition} value="interspersed" class="text-green-500 focus:ring-green-500" />
-													<span class="text-gray-200">Mixed in</span>
+													<span class="text-gray-200">{(m as any)['page.bulk.mixed_in']()}</span>
 												</label>
 											</div>
 										</div>
 
 										<div>
-											<span class="text-sm font-medium text-gray-300 mb-2 block">Grouping</span>
+											<span class="text-sm font-medium text-gray-300 mb-2 block">{(m as any)['page.bulk.grouping']()}</span>
 											<div class="grid grid-cols-2 gap-2">
 												<label class="flex items-center gap-2 cursor-pointer text-xs">
 													<input type="radio" bind:group={charGrouping} value="together" class="text-green-500 focus:ring-green-500" />
-													<span class="text-gray-200">Together (12#)</span>
+													<span class="text-gray-200">{(m as any)['page.bulk.together']()}</span>
 												</label>
 												<label class="flex items-center gap-2 cursor-pointer text-xs">
 													<input type="radio" bind:group={charGrouping} value="separate" class="text-green-500 focus:ring-green-500" />
-													<span class="text-gray-200">Separate (1#2)</span>
+													<span class="text-gray-200">{(m as any)['page.bulk.separate']()}</span>
 												</label>
 											</div>
 										</div>
@@ -536,10 +567,13 @@
 				{#if isGenerating}
 					<div class="flex items-center justify-center gap-2">
 						<LoadingIndicator size="sm" />
-						Generating... ({Math.round(progress)}%)
+						{(m as any)['page.bulk.generating']({ progress: Math.round(progress) })}
 					</div>
 				{:else}
-					Generate {quantity} {generationMode === 'words' ? 'Passphrases' : 'Passwords'}
+					{(m as any)['page.bulk.generate_count']({ 
+						count: quantity, 
+						type: generationMode === 'words' ? (m as any)['page.bulk.passphrases']() : (m as any)['page.bulk.passwords']()
+					})}
 				{/if}
 			</button>
 		</div>
@@ -552,11 +586,14 @@
 			<div class="rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-2xl">
 				<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
 					<div>
-						<h3 class="text-lg font-semibold text-gray-100">Generated {results.length} {generationMode === 'words' ? 'Passphrases' : 'Passwords'}</h3>
+						<h3 class="text-lg font-semibold text-gray-100">{(m as any)['page.bulk.generated_count']({ 
+							count: results.length, 
+							type: generationMode === 'words' ? (m as any)['page.bulk.passphrases']() : (m as any)['page.bulk.passwords']()
+						})}</h3>
 						{#if averageStrength}
 							<p class="text-sm text-gray-400">
-								Average Strength: <span class="{averageStrength.score >= 80 ? 'text-green-400' : averageStrength.score >= 60 ? 'text-yellow-400' : 'text-red-400'}">{averageStrength.score.toFixed(0)}%</span> •
-								Average Entropy: <span class="text-green-400">{averageStrength.entropy.toFixed(1)} bits</span>
+								{(m as any)['page.bulk.average_strength']({ strength: averageStrength.score.toFixed(0) })} •
+								{(m as any)['page.bulk.average_entropy']({ entropy: averageStrength.entropy.toFixed(1) })}
 							</p>
 						{/if}
 					</div>
@@ -566,36 +603,38 @@
 							on:click={copyAll}
 							class="button-gleam rounded-md px-4 py-2 text-sm font-medium text-white bg-green-500 hover:bg-green-600 transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-700"
 						>
-							Copy All
+							{(m as any)['page.bulk.copy_all']()}
 						</button>
 						
 						<button
 							on:click={exportData}
 							class="rounded-md border border-slate-500 bg-slate-700 px-4 py-2 text-sm font-medium text-gray-200 hover:bg-slate-600 hover:border-slate-400 transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800"
 						>
-							Export as {exportFormat.toUpperCase()}
+							{(m as any)['page.bulk.export_as']({ format: exportFormat.toUpperCase() })}
 						</button>
 					</div>
 				</div>
 
 				<!-- Export Options -->
 				<div class="flex items-center gap-4 p-4 bg-slate-700/30 rounded-lg border border-slate-600">
-					<label for="exportFormat" class="text-sm text-gray-300">Export Format:</label>
+					<label for="exportFormat" class="text-sm text-gray-300">{(m as any)['page.bulk.export_format']()}</label>
 					<select 
 						id="exportFormat"
 						bind:value={exportFormat}
 						class="rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500"
 					>
-						<option value="txt">Text (.txt)</option>
-						<option value="csv">CSV (.csv)</option>
-						<option value="json">JSON (.json)</option>
+						<option value="txt">{(m as any)['page.bulk.text_format']()}</option>
+						<option value="csv">{(m as any)['page.bulk.csv_format']()}</option>
+						<option value="json">{(m as any)['page.bulk.json_format']()}</option>
 					</select>
 				</div>
 			</div>
 
 			<!-- Passphrases List -->
 			<div class="rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-2xl">
-				<h3 class="text-lg font-semibold text-gray-100 mb-4">Generated {generationMode === 'words' ? 'Passphrases' : 'Passwords'}</h3>
+				<h3 class="text-lg font-semibold text-gray-100 mb-4">{(m as any)['page.bulk.generated_list']({ 
+					type: generationMode === 'words' ? (m as any)['page.bulk.passphrases']() : (m as any)['page.bulk.passwords']()
+				})}</h3>
 				
 				<div class="max-h-96 overflow-y-auto space-y-2">
 					{#each results as result (result.index)}
@@ -624,30 +663,27 @@
 
 	<!-- Info Section -->
 	<section class="w-full rounded-xl border border-slate-700 bg-slate-800 p-6 shadow-2xl">
-		<h3 class="text-lg font-semibold text-gray-100 mb-4">Bulk Generation Benefits</h3>
+		<h3 class="text-lg font-semibold text-gray-100 mb-4">{(m as any)['page.bulk.benefits_title']()}</h3>
 		
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 			<div>
-				<h4 class="text-md font-medium text-green-400 mb-2">⚡ Efficiency</h4>
+				<h4 class="text-md font-medium text-green-400 mb-2">⚡ {(m as any)['page.bulk.efficiency_title']()}</h4>
 				<p class="text-sm text-gray-300">
-					Generate dozens of unique passwords in seconds. Perfect for setting up 
-					multiple accounts or team onboarding scenarios.
+					{(m as any)['page.bulk.efficiency_desc']()}
 				</p>
 			</div>
 			
 			<div>
-				<h4 class="text-md font-medium text-green-400 mb-2">🎯 Consistency</h4>
+				<h4 class="text-md font-medium text-green-400 mb-2">🎯 {(m as any)['page.bulk.consistency_title']()}</h4>
 				<p class="text-sm text-gray-300">
-					All passwords follow the same security configuration, ensuring 
-					consistent strength and compliance across your organization.
+					{(m as any)['page.bulk.consistency_desc']()}
 				</p>
 			</div>
 			
 			<div>
-				<h4 class="text-md font-medium text-green-400 mb-2">📊 Export Options</h4>
+				<h4 class="text-md font-medium text-green-400 mb-2">📊 {(m as any)['page.bulk.export_title']()}</h4>
 				<p class="text-sm text-gray-300">
-					Export in multiple formats (TXT, CSV, JSON) for easy integration 
-					with password managers or deployment scripts.
+					{(m as any)['page.bulk.export_desc']()}
 				</p>
 			</div>
 		</div>
@@ -656,7 +692,7 @@
 	<!-- Security Notice -->
 	<div class="w-full text-center mt-8 mb-4">
 		<p class="text-xs text-slate-500">
-			All passwords are generated locally in your browser. No data is transmitted to servers.
+			{(m as any)['page.bulk.security_notice']()}
 		</p>
 	</div>
 

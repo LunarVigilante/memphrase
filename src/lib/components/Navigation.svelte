@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import LanguageSwitcher from './LanguageSwitcher.svelte';
 	import * as m from '$lib/paraglide/messages';
 
 	let showPasswordTools = false;
@@ -169,9 +168,6 @@
 
 			<!-- Right Side Actions -->
 			<div class="flex items-center gap-3">
-				<!-- Language Switcher -->
-				<LanguageSwitcher />
-				
 				<!-- Mobile Menu Button -->
 				<button class="md:hidden p-2 text-gray-300 hover:text-white" aria-label={(m as any)["aria.open_mobile_menu"]()}>
 					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

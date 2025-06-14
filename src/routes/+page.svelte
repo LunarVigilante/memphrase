@@ -149,7 +149,9 @@
 	
 	// Memoized calculation functions
 	const memoizedStrengthCalculation = memoize(calculatePassphraseStrength);
-	const memoizedPatternDescription = memoize(describeWordPattern);
+	const memoizedPatternDescription = memoize((numWords: number, selectedCategories: string[]) => 
+		describeWordPattern(numWords, selectedCategories, m)
+	);
 
 	// Reactive trigger for settings changes
 	$: settingsSignature = `${generationMode}-${numWords}-${separator}-${capitalize}-${numDigitsForWordMode}-${numSymbolsForWordMode}-${selectedCategories.join(',')}-${numSymPosition}-${autoCopy}-${charGrouping}-${randomPasswordLength}-${randomIncludeLowercase}-${randomIncludeUppercase}-${randomIncludeNumbers}-${randomIncludeSymbols}-${customSymbolsWordMode.join('')}-${customSymbolsRandomMode.join('')}-${pronounceableSyllables}-${pronounceableComplexity}`;
@@ -599,6 +601,37 @@
 	// Reactive statements for validation
 	$: separator = validateSeparator(separator || '');
 
+	// Function to translate category names
+	function translateCategoryName(categoryName: string): string {
+		const categoryMap: { [key: string]: string } = {
+			'Adjectives': 'category.adjectives',
+			'Nouns': 'category.nouns', 
+			'Verbs': 'category.verbs',
+			'General Adjectives': 'category.general_adjectives',
+			'Colors': 'category.colors',
+			'Qualities/Traits': 'category.qualities_traits',
+			'Sizes/Shapes': 'category.sizes_shapes',
+			'Emotions': 'category.emotions',
+			'Animals': 'category.animals',
+			'Common Objects': 'category.common_objects',
+			'Foods': 'category.foods',
+			'Places': 'category.places',
+			'Concepts/Ideas': 'category.concepts_ideas',
+			'Technology': 'category.technology',
+			'Nature': 'category.nature',
+			'Occupations': 'category.occupations',
+			'Transportation': 'category.transportation',
+			'Action Verbs': 'category.action_verbs',
+			'State Verbs': 'category.state_verbs'
+		};
+		
+		const translationKey = categoryMap[categoryName];
+		if (translationKey) {
+			return (m as any)[translationKey]();
+		}
+		return categoryName; // Fallback to original name if no translation found
+	}
+
 </script>
 
 <svelte:head>
@@ -799,11 +832,11 @@
 
 	{#if generationMode === 'words' && !noCategoriesSelectedError && numWords > 0}
 		<div class="text-center mt-1 mb-2">
-			<CustomTooltip text="MemPhrase uses word patterns to make passphrases more memorable while maintaining security." position="top">
-				<p class="text-xs text-slate-400 italic">
-					Pattern: {memoizedPatternDescription(numWords, selectedCategories)}
-				</p>
-			</CustomTooltip>
+									<CustomTooltip text="{(m as any)['text.tooltip_pattern']()}" position="top">
+							<p class="text-xs text-slate-400 italic">
+								{(m as any)['text.pattern']({ pattern: memoizedPatternDescription(numWords, selectedCategories) })}
+							</p>
+						</CustomTooltip>
 		</div>
 	{/if}
 
@@ -849,7 +882,7 @@
 				<div class="space-y-6">
 					<!-- Word Count Slider -->
 					<div class="w-full">
-						<CustomTooltip text="Total number of words in your passphrase (1-7). More words significantly increase strength and memorability." position="top">
+						<CustomTooltip text="{(m as any)['text.tooltip_word_count']()}" position="top">
 							<div class="space-y-2">
 								<label for="numWords" class="block text-sm font-medium text-gray-300">{(m as any)['words.count']({ count: numWords })}</label>
 								<input type="range" id="numWords" name="numWords" min="1" max="7" step="1" bind:value={numWords} style="--slider-fill-percent: {sliderFillPercent}%" class="custom-slider w-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
@@ -859,7 +892,7 @@
 
 					<!-- Word Categories -->
 					<fieldset class="mt-4 rounded-lg {noCategoriesSelectedError && wordCategoriesOpen ? 'border border-red-500 p-3' : 'border-transparent'}">
-						<CustomTooltip text="Settings for word-based part of the passphrase." position="top">
+						<CustomTooltip text="{(m as any)['text.tooltip_word_categories']()}" position="top">
 							<button 
 								type="button"
 								on:click={() => wordCategoriesOpen = !wordCategoriesOpen}
@@ -879,14 +912,14 @@
 									{#if category.isParent && category.subCategories && category.subCategories.length > 0}
 										<!-- Parent Category -->
 										<div class="space-y-1">
-											<CustomTooltip text="Toggle all {category.name.toLowerCase()} sub-categories" position="top">
+											<CustomTooltip text="{(m as any)['text.tooltip_toggle_parent']({ category: translateCategoryName(category.name).toLowerCase() })}" position="top">
 												<button 
 													type="button"
 													on:click={() => handleParentCategoryToggle(category)}
 													class="flex items-center gap-x-3 cursor-pointer w-full p-1 hover:bg-slate-700 rounded-md focus:outline-none focus:ring-1 focus:ring-green-500"
 												>
 													<input type="checkbox" checked={isParentChecked(category)} indeterminate={isParentIndeterminate(category)} tabindex="-1" class="custom-checkbox pointer-events-none" style={`--checkmark-url: ${checkmarkDataUrl}`} />
-													<span class="text-sm font-semibold text-gray-200 select-none">{category.name}</span>
+													<span class="text-sm font-semibold text-gray-200 select-none">{translateCategoryName(category.name)}</span>
 												</button>
 											</CustomTooltip>
 											{#if isParentChecked(category) || isParentIndeterminate(category)}
@@ -895,7 +928,7 @@
 														<CustomTooltip text="e.g., {subCategory.words?.slice(0,3).join(', ')}{subCategory.words && subCategory.words.length > 3 ? '...' : ''}" position="right">
 															<label class="flex items-center gap-x-3 cursor-pointer p-1 hover:bg-slate-700 rounded-md">
 																<input type="checkbox" value={subCategory.name} bind:group={selectedCategories} class="custom-checkbox focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" style={`--checkmark-url: ${checkmarkDataUrl}`} />
-																<span class="text-sm text-gray-300 select-none hover:text-gray-100">{subCategory.name}</span>
+																<span class="text-sm text-gray-300 select-none hover:text-gray-100">{translateCategoryName(subCategory.name)}</span>
 															</label>
 														</CustomTooltip>
 													{/each}
@@ -913,7 +946,7 @@
 													class="custom-checkbox focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800"
 													style={`--checkmark-url: ${checkmarkDataUrl}`}
 												/>
-												<span class="text-sm text-gray-300 select-none hover:text-gray-100">{category.name}</span>
+												<span class="text-sm text-gray-300 select-none hover:text-gray-100">{translateCategoryName(category.name)}</span>
 											</label>
 										</CustomTooltip>
 									{/if}
@@ -931,17 +964,17 @@
 					<div class="flex flex-wrap items-start gap-x-6 gap-y-4 md:gap-y-0">
 						<!-- General Options -->
 						<fieldset class="min-w-[200px] flex-1 md:flex-grow-[2]">
-							<CustomTooltip text="General formatting options for the word-based passphrase." position="top">
+							<CustomTooltip text="{(m as any)['text.tooltip_word_formatting']()}" position="top">
 								<legend class="block text-sm font-medium text-gray-300 mb-2">{(m as any)['settings.word_formatting']()}</legend>
 							</CustomTooltip>
 							<div class="grid grid-cols-1 gap-3">
-								<CustomTooltip text="Capitalize the first letter of each word. e.g., QuickBrownFox." position="top">
+								<CustomTooltip text="{(m as any)['text.tooltip_capitalize']()}" position="top">
 									<label class="flex items-center gap-x-3 cursor-pointer">
 										<input type="checkbox" bind:checked={capitalize} class="custom-checkbox focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" style={`--checkmark-url: ${checkmarkDataUrl}`} />
 										<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['words.capitalize']()}</span>
 									</label>
 								</CustomTooltip>
-								<CustomTooltip text="Automatically copy the generated passphrase to your clipboard." position="top">
+								<CustomTooltip text="{(m as any)['text.tooltip_auto_copy']()}" position="top">
 									<label class="flex items-center gap-x-3 cursor-pointer">
 										<input type="checkbox" bind:checked={autoCopy} class="custom-checkbox focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" style={`--checkmark-url: ${checkmarkDataUrl}`} />
 										<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['words.auto_copy']()}</span>
@@ -952,7 +985,7 @@
 
 						<!-- Separator -->
 						<div class="flex-1 flex justify-center md:flex-grow-[1]">
-															<CustomTooltip text="Character(s) to place between words. Leave empty for no separator (words will be joined together). E.g., -, _, ., or space." position="top">
+															<CustomTooltip text="{(m as any)['text.tooltip_separator']()}" position="top">
 									<div class="mt-4 md:mt-8 flex flex-col items-center">
 										<label for="separator" class="mb-1 block text-sm font-medium text-gray-300">{(m as any)['words.separator']()}</label>
 									<input 
@@ -973,7 +1006,7 @@
 
 					<!-- Numbers & Symbols -->
 					<fieldset class="mt-3">
-						<CustomTooltip text="Settings for including numbers and symbols in word-based passphrases." position="top">
+						<CustomTooltip text="{(m as any)['text.tooltip_numbers_symbols']()}" position="top">
 							<button 
 								type="button"
 								on:click={() => numbersSymbolsOpen = !numbersSymbolsOpen}
@@ -990,7 +1023,7 @@
 						{#if numbersSymbolsOpen}
 							<div id="word-numbers-symbols-content" class="space-y-4 pt-3 pb-1 px-1" transition:slide={{ duration: 200 }}>
 								<!-- Number of Digits Input -->
-								<CustomTooltip text="How many digits to include (0-5). 0 means no digits." position="top">
+								<CustomTooltip text="{(m as any)['text.tooltip_digits_count']()}" position="top">
 									<div class="pl-0">
 										<label for="numDigitsWordInput" class="mb-1 block text-sm font-medium text-gray-300">{(m as any)['input.digits']({ count: numDigitsForWordMode })}</label>
 										<input type="number" id="numDigitsWordInput" bind:value={numDigits} min="0" max="5" class="block w-20 rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500" />
@@ -998,13 +1031,13 @@
 								</CustomTooltip>
 								
 								<!-- Number of Symbols Input -->
-								<CustomTooltip text="How many symbols to include (0-5). 0 means no symbols." position="left">
+								<CustomTooltip text="{(m as any)['text.tooltip_symbols_count']()}" position="left">
 									<div class="pl-0 mt-3">
 										<label for="numSymbolsWordInput" class="mb-1 block text-sm font-medium text-gray-300">{(m as any)['input.symbols']({ count: numSymbolsForWordMode })}</label>
 										<div class="flex items-center">
 											<input type="number" id="numSymbolsWordInput" bind:value={numSymbols} min="0" max="5" class="block w-20 rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500" />
 											{#if numSymbolsForWordMode > 0}
-												<CustomTooltip text="Customize which symbols are used for word-based passphrases." position="right">
+												<CustomTooltip text="{(m as any)['text.tooltip_customize_symbols']()}" position="right">
 													<button type="button" on:click={() => openSymbolModal('words')} class="cursor-pointer ml-3 p-1 text-xl text-slate-400 hover:text-slate-100 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800 rounded-md flex items-center justify-center transition-all duration-150 ease-in-out" aria-label="Customize symbols for word-based passphrases" title="Customize Symbols">
 														⚙️
 													</button>
@@ -1015,48 +1048,48 @@
 								</CustomTooltip>
 
 								{#if numDigitsForWordMode > 0 || numSymbolsForWordMode > 0}
-									<CustomTooltip text="Where to place the numbers and/or symbols relative to the words." position="top">
+									<CustomTooltip text="{(m as any)['text.tooltip_position']()}" position="top">
 										<fieldset class="mt-4">
-											<legend class="block text-sm font-medium text-gray-300 mb-1">Number/Symbol Position</legend>
+											<legend class="block text-sm font-medium text-gray-300 mb-1">{(m as any)['label.number_symbol_position']()}</legend>
 											<!-- Radio buttons for numSymPosition -->
 											<div class="flex flex-col gap-2 pl-2">
-												<CustomTooltip text="Add numbers/symbols at the end of the passphrase." position="bottom">
+												<CustomTooltip text="{(m as any)['text.tooltip_position_append']()}" position="bottom">
 													<label class="flex items-center gap-x-2 cursor-pointer">
 														<input type="radio" bind:group={numSymPosition} name="numSymPositionWord" value="append" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
-														<span class="text-sm text-gray-300 select-none hover:text-gray-100">Append (default)</span>
+														<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['option.position_append']()}</span>
 													</label>
 												</CustomTooltip>
-												<CustomTooltip text="Add numbers/symbols at the beginning of the passphrase." position="bottom">
+												<CustomTooltip text="{(m as any)['text.tooltip_position_prepend']()}" position="bottom">
 													<label class="flex items-center gap-x-2 cursor-pointer">
 														<input type="radio" bind:group={numSymPosition} name="numSymPositionWord" value="prepend" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
-														<span class="text-sm text-gray-300 select-none hover:text-gray-100">Prepend</span>
+														<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['option.position_prepend']()}</span>
 													</label>
 												</CustomTooltip>
-												<CustomTooltip text="Places numbers/symbols at random positions between words. If grouped separately, number block and symbol block are placed independently." position="bottom">
+												<CustomTooltip text="{(m as any)['text.tooltip_position_interspersed']()}" position="bottom">
 													<label class="flex items-center gap-x-2 cursor-pointer">
 														<input type="radio" bind:group={numSymPosition} name="numSymPositionWord" value="interspersed" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
-														<span class="text-sm text-gray-300 select-none hover:text-gray-100">Interspersed</span>
+														<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['option.position_interspersed']()}</span>
 													</label>
 												</CustomTooltip>
 											</div>
 										</fieldset>
 									</CustomTooltip>
 
-									<CustomTooltip text="How numbers and symbols are grouped if both are included." position="top">
+									<CustomTooltip text="{(m as any)['text.tooltip_grouping']()}" position="top">
 										<fieldset class="mt-4">
-											<legend class="block text-sm font-medium text-gray-300 mb-1">Symbol/Number Grouping</legend>
+											<legend class="block text-sm font-medium text-gray-300 mb-1">{(m as any)['label.symbol_number_grouping']()}</legend>
 											<!-- Radio buttons for charGrouping -->
 											<div class="flex flex-col gap-2 pl-2">
-												<CustomTooltip text="Numbers and symbols are combined into a single block (e.g., 123#$%)" position="bottom">
+												<CustomTooltip text="{(m as any)['text.tooltip_grouping_together']()}" position="bottom">
 													<label class="flex items-center gap-x-2 cursor-pointer">
 														<input type="radio" bind:group={charGrouping} name="charGroupingWord" value="together" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
-														<span class="text-sm text-gray-300 select-none hover:text-gray-100">Together (default)</span>
+														<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['option.grouping_together']()}</span>
 													</label>
 												</CustomTooltip>
-												<CustomTooltip text="If selected, number blocks and symbol blocks can be placed independently when 'Interspersed'. For 'Append'/'Prepend', they are added sequentially." position="bottom">
+												<CustomTooltip text="{(m as any)['text.tooltip_grouping_separate']()}" position="bottom">
 													<label class="flex items-center gap-x-2 cursor-pointer">
 														<input type="radio" bind:group={charGrouping} name="charGroupingWord" value="separate" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
-														<span class="text-sm text-gray-300 select-none hover:text-gray-100">Separate</span>
+														<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['option.grouping_separate']()}</span>
 													</label>
 												</CustomTooltip>
 											</div>
@@ -1073,9 +1106,9 @@
 			<div class="space-y-6">
 				<!-- Syllable Configuration -->
 				<div class="space-y-4">
-					<CustomTooltip text="Number of syllables in the pronounceable password. More syllables create longer, stronger passwords." position="top">
+					<CustomTooltip text="{(m as any)['text.tooltip_syllables']()}" position="top">
 						<div class="space-y-2">
-							<label for="pronounceableSyllables" class="block text-sm font-medium text-gray-300">Number of Syllables: <span class="font-bold text-green-400">{pronounceableSyllables}</span></label>
+							<label for="pronounceableSyllables" class="block text-sm font-medium text-gray-300">{(m as any)['text.syllables_count']({ count: pronounceableSyllables })}</label>
 							<input 
 								type="range" 
 								id="pronounceableSyllables" 
@@ -1092,34 +1125,34 @@
 
 					<!-- Complexity Selection -->
 					<fieldset class="mt-4">
-						<CustomTooltip text="Controls the complexity of syllable patterns. Simple uses basic consonant-vowel patterns, while complex includes digraphs and trigraphs." position="top">
-							<legend class="block text-sm font-medium text-gray-300 mb-3">Complexity Level</legend>
+						<CustomTooltip text="{(m as any)['text.tooltip_complexity']()}" position="top">
+							<legend class="block text-sm font-medium text-gray-300 mb-3">{(m as any)['label.complexity_level']()}</legend>
 						</CustomTooltip>
 						<div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-							<CustomTooltip text="Basic patterns with simple consonants and vowels. Easier to pronounce and type." position="top">
+							<CustomTooltip text="{(m as any)['text.tooltip_simple']()}" position="top">
 								<label class="flex items-center gap-x-3 cursor-pointer p-3 border border-slate-600 rounded-lg hover:border-slate-500 transition-colors {pronounceableComplexity === 'simple' ? 'border-green-500 bg-green-900/20' : ''}">
 									<input type="radio" bind:group={pronounceableComplexity} value="simple" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
 									<div>
-										<div class="text-sm font-medium text-gray-200">Simple</div>
-										<div class="text-xs text-gray-400">Basic patterns</div>
+										<div class="text-sm font-medium text-gray-200">{(m as any)['option.complexity_simple']()}</div>
+										<div class="text-xs text-gray-400">{(m as any)['text.complexity_simple_desc']()}</div>
 									</div>
 								</label>
 							</CustomTooltip>
-							<CustomTooltip text="Moderate complexity with common letter combinations. Good balance of security and usability." position="top">
+							<CustomTooltip text="{(m as any)['text.tooltip_balanced']()}" position="top">
 								<label class="flex items-center gap-x-3 cursor-pointer p-3 border border-slate-600 rounded-lg hover:border-slate-500 transition-colors {pronounceableComplexity === 'balanced' ? 'border-green-500 bg-green-900/20' : ''}">
 									<input type="radio" bind:group={pronounceableComplexity} value="balanced" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
 									<div>
-										<div class="text-sm font-medium text-gray-200">Balanced</div>
-										<div class="text-xs text-gray-400">Recommended</div>
+										<div class="text-sm font-medium text-gray-200">{(m as any)['option.complexity_balanced']()}</div>
+										<div class="text-xs text-gray-400">{(m as any)['text.complexity_balanced_desc']()}</div>
 									</div>
 								</label>
 							</CustomTooltip>
-							<CustomTooltip text="Advanced patterns with complex consonant clusters and vowel combinations. Maximum security." position="top">
+							<CustomTooltip text="{(m as any)['text.tooltip_complex']()}" position="top">
 								<label class="flex items-center gap-x-3 cursor-pointer p-3 border border-slate-600 rounded-lg hover:border-slate-500 transition-colors {pronounceableComplexity === 'complex' ? 'border-green-500 bg-green-900/20' : ''}">
 									<input type="radio" bind:group={pronounceableComplexity} value="complex" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
 									<div>
-										<div class="text-sm font-medium text-gray-200">Complex</div>
-										<div class="text-xs text-gray-400">Maximum strength</div>
+										<div class="text-sm font-medium text-gray-200">{(m as any)['option.complexity_complex']()}</div>
+										<div class="text-xs text-gray-400">{(m as any)['text.complexity_complex_desc']()}</div>
 									</div>
 								</label>
 							</CustomTooltip>
@@ -1128,20 +1161,20 @@
 
 					<!-- General Options -->
 					<fieldset class="mt-4">
-						<CustomTooltip text="General formatting options for pronounceable passwords." position="top">
-							<legend class="block text-sm font-medium text-gray-300 mb-2">Formatting</legend>
+						<CustomTooltip text="{(m as any)['text.tooltip_formatting']()}" position="top">
+							<legend class="block text-sm font-medium text-gray-300 mb-2">{(m as any)['label.formatting']()}</legend>
 						</CustomTooltip>
 						<div class="grid grid-cols-1 gap-3">
-							<CustomTooltip text="Capitalize the first letter of the password." position="top">
+							<CustomTooltip text="{(m as any)['text.tooltip_capitalize_first']()}" position="top">
 								<label class="flex items-center gap-x-3 cursor-pointer">
 									<input type="checkbox" bind:checked={capitalize} class="custom-checkbox focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" style={`--checkmark-url: ${checkmarkDataUrl}`} />
-									<span class="text-sm text-gray-300 select-none hover:text-gray-100">Capitalize first letter</span>
+									<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['text.capitalize_first']()}</span>
 								</label>
 							</CustomTooltip>
-							<CustomTooltip text="Automatically copy the generated password to your clipboard." position="top">
+							<CustomTooltip text="{(m as any)['text.tooltip_auto_copy']()}" position="top">
 								<label class="flex items-center gap-x-3 cursor-pointer">
 									<input type="checkbox" bind:checked={autoCopy} class="custom-checkbox focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" style={`--checkmark-url: ${checkmarkDataUrl}`} />
-									<span class="text-sm text-gray-300 select-none hover:text-gray-100">Auto-copy new password</span>
+									<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['text.auto_copy_password']()}</span>
 								</label>
 							</CustomTooltip>
 						</div>
@@ -1149,7 +1182,7 @@
 
 					<!-- Numbers & Symbols for Pronounceable -->
 					<fieldset class="mt-3">
-						<CustomTooltip text="Settings for including numbers and symbols in pronounceable passwords." position="top">
+						<CustomTooltip text="{(m as any)['text.tooltip_pronounceable_numbers']()}" position="top">
 							<button 
 								type="button"
 								on:click={() => pronounceableOptionsOpen = !pronounceableOptionsOpen}
@@ -1157,7 +1190,7 @@
 								aria-controls="pronounceable-numbers-symbols-content"
 								class="w-full flex justify-between items-center text-left text-sm font-medium mb-2 p-2 rounded-t-md bg-slate-800 hover:bg-slate-700 border-b border-slate-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800"
 							>
-								<span class="text-gray-200">Numbers & Symbols</span>
+								<span class="text-gray-200">{(m as any)['settings.numbers_symbols']()}</span>
 								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 transform transition-transform duration-200 text-gray-400 {pronounceableOptionsOpen ? 'rotate-0' : '-rotate-90'}">
 									<path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
 								</svg>
@@ -1166,21 +1199,21 @@
 						{#if pronounceableOptionsOpen}
 							<div id="pronounceable-numbers-symbols-content" class="space-y-4 pt-3 pb-1 px-1" transition:slide={{ duration: 200 }}>
 								<!-- Number of Digits Input -->
-								<CustomTooltip text="How many digits to include (0-5). 0 means no digits." position="top">
+								<CustomTooltip text="{(m as any)['text.tooltip_digits_count']()}" position="top">
 									<div class="pl-0">
-										<label for="numDigitsPronounceableInput" class="mb-1 block text-sm font-medium text-gray-300">Number of Digits (0-5): <span class="font-bold text-green-400">{numDigitsForWordMode}</span></label>
+										<label for="numDigitsPronounceableInput" class="mb-1 block text-sm font-medium text-gray-300">{(m as any)['input.digits']({ count: numDigitsForWordMode })}</label>
 										<input type="number" id="numDigitsPronounceableInput" bind:value={numDigits} min="0" max="5" class="block w-20 rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500" />
 									</div>
 								</CustomTooltip>
 								
 								<!-- Number of Symbols Input -->
-								<CustomTooltip text="How many symbols to include (0-5). 0 means no symbols." position="left">
+								<CustomTooltip text="{(m as any)['text.tooltip_symbols_count']()}" position="left">
 									<div class="pl-0 mt-3">
-										<label for="numSymbolsPronounceableInput" class="mb-1 block text-sm font-medium text-gray-300">Number of Symbols (0-5): <span class="font-bold text-green-400">{numSymbolsForWordMode}</span></label>
+										<label for="numSymbolsPronounceableInput" class="mb-1 block text-sm font-medium text-gray-300">{(m as any)['input.symbols']({ count: numSymbolsForWordMode })}</label>
 										<div class="flex items-center">
 											<input type="number" id="numSymbolsPronounceableInput" bind:value={numSymbols} min="0" max="5" class="block w-20 rounded-md border-gray-500 bg-gray-700 text-sm text-white shadow-sm focus:border-green-500 focus:ring-green-500" />
 											{#if numSymbolsForWordMode > 0}
-												<CustomTooltip text="Customize which symbols are used for pronounceable passwords." position="right">
+												<CustomTooltip text="{(m as any)['text.tooltip_pronounceable_symbols']()}" position="right">
 													<button type="button" on:click={() => openSymbolModal('words')} class="cursor-pointer ml-3 p-1 text-xl text-slate-400 hover:text-slate-100 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800 rounded-md flex items-center justify-center transition-all duration-150 ease-in-out" aria-label="Customize symbols for pronounceable passwords" title="Customize Symbols">
 														⚙️
 													</button>
@@ -1191,27 +1224,27 @@
 								</CustomTooltip>
 
 								{#if numDigitsForWordMode > 0 || numSymbolsForWordMode > 0}
-									<CustomTooltip text="Where to place the numbers and/or symbols relative to the pronounceable password." position="top">
+									<CustomTooltip text="{(m as any)['text.tooltip_pronounceable_position']()}" position="top">
 										<fieldset class="mt-4">
-											<legend class="block text-sm font-medium text-gray-300 mb-1">Number/Symbol Position</legend>
+											<legend class="block text-sm font-medium text-gray-300 mb-1">{(m as any)['label.position']()}</legend>
 											<!-- Radio buttons for numSymPosition -->
 											<div class="flex flex-col gap-2 pl-2">
-												<CustomTooltip text="Add numbers/symbols at the end of the password." position="bottom">
+												<CustomTooltip text="{(m as any)['text.tooltip_pronounceable_append']()}" position="bottom">
 													<label class="flex items-center gap-x-2 cursor-pointer">
 														<input type="radio" bind:group={numSymPosition} name="numSymPositionPronounceable" value="append" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
-														<span class="text-sm text-gray-300 select-none hover:text-gray-100">Append (default)</span>
+														<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['option.position_append']()}</span>
 													</label>
 												</CustomTooltip>
-												<CustomTooltip text="Add numbers/symbols at the beginning of the password." position="bottom">
+												<CustomTooltip text="{(m as any)['text.tooltip_pronounceable_prepend']()}" position="bottom">
 													<label class="flex items-center gap-x-2 cursor-pointer">
 														<input type="radio" bind:group={numSymPosition} name="numSymPositionPronounceable" value="prepend" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
-														<span class="text-sm text-gray-300 select-none hover:text-gray-100">Prepend</span>
+														<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['option.position_prepend']()}</span>
 													</label>
 												</CustomTooltip>
-												<CustomTooltip text="Places numbers/symbols at random positions within the password." position="bottom">
+												<CustomTooltip text="{(m as any)['text.tooltip_pronounceable_interspersed']()}" position="bottom">
 													<label class="flex items-center gap-x-2 cursor-pointer">
 														<input type="radio" bind:group={numSymPosition} name="numSymPositionPronounceable" value="interspersed" class="custom-radio focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" />
-														<span class="text-sm text-gray-300 select-none hover:text-gray-100">Interspersed</span>
+														<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['option.position_interspersed']()}</span>
 													</label>
 												</CustomTooltip>
 											</div>
@@ -1226,7 +1259,7 @@
 		{:else if generationMode === 'randomChars'}
 			<!-- RANDOM CHARACTER OPTIONS -->
 			<div class="space-y-6">
-				<CustomTooltip text="Settings for random character passwords." position="top">
+				<CustomTooltip text="{(m as any)['text.tooltip_random_character_types']()}" position="top">
 					<button 
 						type="button"
 						on:click={() => randomCharsOptionsOpen = !randomCharsOptionsOpen}
@@ -1234,7 +1267,7 @@
 						aria-controls="random-chars-content"
 						class="w-full flex justify-between items-center text-left text-sm font-medium mb-2 p-2 rounded-t-md bg-slate-800 hover:bg-slate-700 border-b border-slate-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800"
 					>
-						<span class="text-gray-200">Random Character Options</span>
+						<span class="text-gray-200">{(m as any)['settings.random_options']()}</span>
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5 transform transition-transform duration-200 text-gray-400 {randomCharsOptionsOpen ? 'rotate-0' : '-rotate-90'}">
 							<path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
 						</svg>
@@ -1245,46 +1278,46 @@
 				<div id="random-chars-content" class="space-y-6 pt-3 pb-1 px-1 md:px-3" transition:slide={{ duration: 200 }}>
 					<!-- Password Length Slider -->
 					<div class="w-full">
-						<!-- <CustomTooltip text="Total length of the random password (8-128 characters)." position="top"> -->
-						<div class="space-y-2">
-							<label for="randomPasswordLengthSlider" class="block text-sm font-medium text-gray-300">Password Length: <span class="font-bold text-green-400">{randomPasswordLength}</span></label>
-							<input type="range" id="randomPasswordLengthSlider" name="randomPasswordLengthSlider" min="8" max="128" step="1" bind:value={randomPasswordLength} style="--slider-fill-percent: {randomSliderFillPercent}%" class="custom-slider w-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800 mt-1" />
-						</div>
-						<!-- </CustomTooltip> -->
+						<CustomTooltip text="{(m as any)['text.tooltip_random_length']()}" position="top">
+							<div class="space-y-2">
+								<label for="randomPasswordLengthSlider" class="block text-sm font-medium text-gray-300">{(m as any)['text.password_length']({ length: randomPasswordLength })}</label>
+								<input type="range" id="randomPasswordLengthSlider" name="randomPasswordLengthSlider" min="8" max="128" step="1" bind:value={randomPasswordLength} style="--slider-fill-percent: {randomSliderFillPercent}%" class="custom-slider w-full cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800 mt-1" />
+							</div>
+						</CustomTooltip>
 					</div>
 
 					<!-- Character Type Checkboxes -->
 					<fieldset aria-labelledby="randomCharTypesLegend">
-						<legend id="randomCharTypesLegend" class="block text-sm font-medium text-gray-300 mb-2">Include Character Types:</legend>
+						<legend id="randomCharTypesLegend" class="block text-sm font-medium text-gray-300 mb-2">{(m as any)['text.character_types']()}</legend>
 						<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-							<CustomTooltip text="Include lowercase letters (a-z)." position="top">
+							<CustomTooltip text="{(m as any)['text.tooltip_include_lowercase']()}" position="top">
 								<label class="flex items-center gap-x-3 cursor-pointer">
 									<input type="checkbox" bind:checked={randomIncludeLowercase} class="custom-checkbox focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" style={`--checkmark-url: ${checkmarkDataUrl}`} />
-									<span class="text-sm text-gray-300 select-none hover:text-gray-100">Lowercase (a-z)</span>
+									<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['label.include_lowercase']()}</span>
 								</label>
 							</CustomTooltip>
-							<CustomTooltip text="Include uppercase letters (A-Z)." position="top">
+							<CustomTooltip text="{(m as any)['text.tooltip_include_uppercase']()}" position="top">
 								<label class="flex items-center gap-x-3 cursor-pointer">
 									<input type="checkbox" bind:checked={randomIncludeUppercase} class="custom-checkbox focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" style={`--checkmark-url: ${checkmarkDataUrl}`} />
-									<span class="text-sm text-gray-300 select-none hover:text-gray-100">Uppercase (A-Z)</span>
+									<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['label.include_uppercase']()}</span>
 								</label>
 							</CustomTooltip>
-							<CustomTooltip text="Include numbers (0-9)." position="top">
+							<CustomTooltip text="{(m as any)['text.tooltip_include_numbers']()}" position="top">
 								<label class="flex items-center gap-x-3 cursor-pointer">
 									<input type="checkbox" bind:checked={randomIncludeNumbers} class="custom-checkbox focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" style={`--checkmark-url: ${checkmarkDataUrl}`} />
-									<span class="text-sm text-gray-300 select-none hover:text-gray-100">Numbers (0-9)</span>
+									<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['label.include_numbers']()}</span>
 								</label>
 							</CustomTooltip>
 							<div> 
-								<CustomTooltip text="Include symbols (e.g., !@#$%)." position="top">
+								<CustomTooltip text="{(m as any)['text.tooltip_include_symbols']()}" position="top">
 									<label class="flex items-center gap-x-3 cursor-pointer">
 										<input type="checkbox" bind:checked={randomIncludeSymbols} class="custom-checkbox focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800" style={`--checkmark-url: ${checkmarkDataUrl}`} />
-										<span class="text-sm text-gray-300 select-none hover:text-gray-100">Symbols (!@#$)</span>
+										<span class="text-sm text-gray-300 select-none hover:text-gray-100">{(m as any)['label.include_symbols']()}</span>
 									</label>
 								</CustomTooltip>
 								{#if randomIncludeSymbols}
 									<div class="flex items-center mt-1 pl-8"> 
-										<CustomTooltip text="Customize which symbols are used for random passwords." position="right">
+										<CustomTooltip text="{(m as any)['text.tooltip_random_symbols']()}" position="right">
 											<button type="button" on:click={() => openSymbolModal('randomChars')} class="cursor-pointer p-1 text-xl text-slate-400 hover:text-slate-100 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-slate-800 rounded-md flex items-center justify-center transition-all duration-150 ease-in-out" aria-label="Customize symbols for random passwords" title="Customize Symbols">
 												⚙️
 											</button>
@@ -1296,7 +1329,7 @@
 						</div>
 					</fieldset>
 					{#if !randomIncludeLowercase && !randomIncludeUppercase && !randomIncludeNumbers && !randomIncludeSymbols}
-						<p class="text-xs text-red-400 pt-2 px-1">Please select at least one character type.</p>
+						<p class="text-xs text-red-400 pt-2 px-1">{(m as any)['error.no_character_types']()}</p>
 					{/if}
 				</div>
 				{/if}
@@ -1308,7 +1341,7 @@
 			<button 
 				on:click={resetToDefaults}
 				class="px-4 py-2 text-xs font-medium text-gray-400 hover:text-gray-100 border border-slate-600 rounded-md hover:border-slate-500 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-slate-800"
-				title="Reset all options to their original defaults"
+				title="{(m as any)['text.reset_tooltip']()}"
 			>
 				{(m as any)['action.reset_defaults']()}
 			</button>
@@ -1324,16 +1357,7 @@
 		on:close={() => showSymbolModal = false}
 	/>
 
-	<!-- Privacy/Security Notice -->
-	<div class="w-full text-center mt-2 mb-0">
-		<p class="text-xs text-slate-500">
-			{generationMode === 'words' 
-				? (m as any)['privacy.notice_words']() 
-				: generationMode === 'pronounceable' 
-					? (m as any)['privacy.notice_pronounceable']() 
-					: (m as any)['privacy.notice_random']()}
-		</p>
-	</div>
+
 
 	<Footer />
 

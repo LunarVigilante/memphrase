@@ -75,16 +75,16 @@
 		}
 	}
 
-	// Auto-detect language on mount
+	// Auto-detect language on mount - but respect server-side detection
 	if (browser) {
 		const saved = localStorage.getItem('preferred-language');
-		const detected = navigator.language.split('-')[0];
+		const currentServerLocale = getLocale(); // Get the server-detected locale
 		
-		if (saved && locales.includes(saved as any)) {
+		// Only override if user has explicitly saved a preference
+		if (saved && locales.includes(saved as any) && saved !== currentServerLocale) {
 			switchLanguage(saved);
-		} else if (locales.includes(detected as any)) {
-			switchLanguage(detected);
 		}
+		// Don't auto-detect from navigator.language anymore since server handles this
 	}
 </script>
 

@@ -2,6 +2,7 @@
 	import CustomTooltip from './CustomTooltip.svelte';
 	import LoadingIndicator from './LoadingIndicator.svelte';
 	import { onMount } from 'svelte';
+	import * as m from '$lib/paraglide/messages';
 	
 	export let strength: {
 		label: string;
@@ -64,6 +65,29 @@
 		pulseAnimation = true;
 		setTimeout(() => pulseAnimation = false, 300);
 	}
+	
+	// Translate strength labels
+	function translateStrengthLabel(label: string): string {
+		const translations: Record<string, string> = {
+			'Very Weak': 'strength.very_weak',
+			'Weak': 'strength.weak', 
+			'Fair': 'strength.fair',
+			'Medium': 'strength.medium',
+			'Good': 'strength.good',
+			'Strong': 'strength.strong',
+			'Very Strong': 'strength.very_strong'
+		};
+		
+		const translationKey = translations[label];
+		if (translationKey) {
+			try {
+				return (m as any)[translationKey]();
+			} catch (e) {
+				return label; // Fallback to original if translation fails
+			}
+		}
+		return label;
+	}
 </script>
 
 {#if strength}
@@ -85,11 +109,11 @@
 		<div class="flex justify-center items-baseline text-center gap-2">
 			<span class="text-lg" aria-hidden="true">{getStatusIcon(strength.score)}</span>
 			<span class={`font-semibold mx-3 transition-colors duration-500 ${hasError ? 'text-red-400' : strength.colorClass} ${pulseAnimation ? 'animate-pulse' : ''}`}>
-				{strength.label}
+				{translateStrengthLabel(strength.label)}
 			</span>
 			{#if !hasError && strength.entropy > 0}
 				<CustomTooltip
-					text="Entropy (bits): Measures unpredictability. Higher is better. This represents the computational difficulty of guessing your password."
+					text="{(m as any)['text.tooltip_entropy']()}"
 					position="top"
 				>
 					<span class="text-xs text-gray-500 cursor-help bg-gray-700 px-2 py-1 rounded">
